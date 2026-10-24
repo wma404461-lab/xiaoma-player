@@ -10,7 +10,7 @@ const {AppUpdater}=require('./app-updater.cjs');
 const {refreshCachedName}=require('./branding.cjs');
 const {MediaInfoReader}=require('./media-info.cjs');
 const {SequenceExporter}=require('./sequence-exporter.cjs');
-app.setName('小马播放器+录屏');app.setAppUserModelId('artist_m.XiaomaPlayer');
+app.setName('Xiaoma Player + Recorder');app.setAppUserModelId('artist_m.XiaomaPlayer');
 
 protocol.registerSchemesAsPrivileged([{scheme:'media',privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true,corsEnabled:true}}]);
 const profile=process.env.YIYAN_TEST_USER_DATA||(app.isPackaged?path.join(path.dirname(process.execPath),'.data'):path.join(__dirname,'../.runtime/profile'));fs.mkdirSync(profile,{recursive:true});app.setPath('userData',profile);
@@ -51,7 +51,7 @@ app.whenReady().then(()=>{
   if(app.isPackaged)refreshCachedName(process.execPath);
   protocol.handle('media',serveMedia);
   Menu.setApplicationMenu(null);
-  win=new BrowserWindow({width:1240,height:830,minWidth:680,minHeight:480,title:'小马播放器+录屏',icon:path.join(__dirname,'../assets/icon.ico'),backgroundColor:'#171a1f',show:!process.env.YIYAN_TEST_MODE,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,backgroundThrottling:!process.env.YIYAN_TEST_MODE,offscreen:!!process.env.YIYAN_TEST_MODE,autoplayPolicy:'no-user-gesture-required'}});
+  win=new BrowserWindow({width:1240,height:830,minWidth:680,minHeight:480,title:'Xiaoma Player + Recorder',icon:path.join(__dirname,'../assets/icon.ico'),backgroundColor:'#171a1f',show:!process.env.YIYAN_TEST_MODE,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,backgroundThrottling:!process.env.YIYAN_TEST_MODE,offscreen:!!process.env.YIYAN_TEST_MODE,autoplayPolicy:'no-user-gesture-required'}});
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   if(process.env.YIYAN_TEST_MODE)win.webContents.setAudioMuted(true);
   win.webContents.on('will-navigate',(e,url)=>{if(url!==win.webContents.getURL())e.preventDefault();});
@@ -63,13 +63,13 @@ app.whenReady().then(()=>{
   ipcMain.handle('update-check',event=>{allowedEvent(event);return updater.check();});
   ipcMain.handle('update-download',event=>{allowedEvent(event);return updater.download();});
   ipcMain.handle('update-install',event=>{allowedEvent(event);return updater.install();});
-  ipcMain.handle('scan',async(event,paths)=>{allowedEvent(event);if(!Array.isArray(paths)||paths.length>5000)throw new Error('文件数量过多');const result=await catalog.scan(paths);watchItems(result.items);return result;});
-  ipcMain.handle('choose',async(event,mode)=>{allowedEvent(event);const result=await dialog.showOpenDialog(win,{title:mode==='folder'?'选择要查看的文件夹':'选择文件',properties:mode==='folder'?['openDirectory']:['openFile','multiSelections']});return result.canceled?[]:result.filePaths;});
+  ipcMain.handle('scan',async(event,paths)=>{allowedEvent(event);if(!Array.isArray(paths)||paths.length>5000)throw new Error('Too many files');const result=await catalog.scan(paths);watchItems(result.items);return result;});
+  ipcMain.handle('choose',async(event,mode)=>{allowedEvent(event);const result=await dialog.showOpenDialog(win,{title:mode==='folder'?'Select the folder to view':'Choose files',properties:mode==='folder'?['openDirectory']:['openFile','multiSelections']});return result.canceled?[]:result.filePaths;});
   ipcMain.handle('initial-paths',event=>{allowedEvent(event);rendererReady=true;const paths=pendingPaths;pendingPaths=[];return paths;});
   ipcMain.handle('fullscreen',event=>{allowedEvent(event);const next=!win.isFullScreen();win.setFullScreen(next);win.webContents.send('fullscreen-state',next);return next;});
-  ipcMain.handle('document-preview',async(event,id)=>{allowedEvent(event);const item=catalog.items.get(id);if(item?.kind!=='document')throw new Error('不是文档文件');return documentConverter.preview(item);});
-  ipcMain.handle('media-info',async(event,id)=>{allowedEvent(event);const item=catalog.items.get(id);if(!['video','audio'].includes(item?.kind))throw new Error('不是音频或视频');return mediaInfoReader.read(item);});
-  ipcMain.handle('export-start',async(event,id,options={})=>{allowedEvent(event);const item=catalog.items.get(id);if(item?.kind!=='sequence')throw new Error('请先打开编号序列');const selected=await dialog.showSaveDialog(win,{title:'合成高画质 MP4',defaultPath:path.join(item.folder,item.name+'.mp4'),filters:[{name:'MP4 视频',extensions:['mp4']}]});if(selected.canceled)return null;return sequenceExporter.start(item,selected.filePath,options);});
+  ipcMain.handle('document-preview',async(event,id)=>{allowedEvent(event);const item=catalog.items.get(id);if(item?.kind!=='document')throw new Error('Not a document file');return documentConverter.preview(item);});
+  ipcMain.handle('media-info',async(event,id)=>{allowedEvent(event);const item=catalog.items.get(id);if(!['video','audio'].includes(item?.kind))throw new Error('Not audio or video');return mediaInfoReader.read(item);});
+  ipcMain.handle('export-start',async(event,id,options={})=>{allowedEvent(event);const item=catalog.items.get(id);if(item?.kind!=='sequence')throw new Error('Please open the sequence first');const selected=await dialog.showSaveDialog(win,{title:'Synthesize high quality MP4',defaultPath:path.join(item.folder,item.name+'.mp4'),filters:[{name:'MP4 Video',extensions:['mp4']}]});if(selected.canceled)return null;return sequenceExporter.start(item,selected.filePath,options);});
   ipcMain.handle('export-frame',(event,id,index,png)=>{allowedEvent(event);return sequenceExporter.write(id,index,png);});
   ipcMain.handle('export-finish',(event,id)=>{allowedEvent(event);return sequenceExporter.finish(id);});
   ipcMain.handle('export-next-pass',(event,id)=>{allowedEvent(event);return sequenceExporter.nextPass(id);});

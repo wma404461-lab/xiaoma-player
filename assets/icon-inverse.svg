@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" data-mark="xiaoma-media-horse-v4" data-variant="dark-background">
-  <title>小马播放器＋录屏 · 白马与播放</title>
+  <title>Xiaoma Player＋Recorder · White horse and play symbol</title>
   <defs>
     <linearGradient id="tile" x1="9" y1="3" x2="54" y2="61" gradientUnits="userSpaceOnUse"><stop stop-color="#539CFB"/><stop offset=".5" stop-color="#3975EE"/><stop offset="1" stop-color="#3A49D4"/></linearGradient>
     <linearGradient id="horse" x1="27" y1="12" x2="32" y2="52" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF"/><stop offset=".58" stop-color="#FAFCFF"/><stop offset="1" stop-color="#DEE9FC"/></linearGradient>

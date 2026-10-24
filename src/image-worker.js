@@ -10,15 +10,15 @@ function dimensions(bytes){
 self.onmessage=async({data:{id,url,ext,edge,encodePng=false}})=>{
   try{
     const nativePreview=edge&&!encodePng&&/^http:\/\/127\.0\.0\.1:\d+\/[^/]+\/media\//.test(url)&&['.png','.bmp'].includes(ext);
-    const response=await fetch(nativePreview?url+(url.includes('?')?'&':'?')+'preview='+edge:url);if(!response.ok)throw new Error('文件读取失败，可能仍在写入');let result;
+    const response=await fetch(nativePreview?url+(url.includes('?')?'&':'?')+'preview='+edge:url);if(!response.ok)throw new Error('file read failed, possibly still being written');let result;
     if(['.exr','.hdr','.tga','.tif','.tiff'].includes(ext)){
       const {decodeFormat}=await import('./format-decoders.js');result=decodeFormat(await response.arrayBuffer(),ext,edge);
     }else{
       const blob=await response.blob(),size=dimensions(new Uint8Array(await blob.slice(0,128*1024).arrayBuffer()));let options={imageOrientation:'from-image'};
-      if(size&&size.width*size.height>100000000)throw new Error('图片尺寸过大');
+      if(size&&size.width*size.height>100000000)throw new Error('image size is too large');
       if(edge&&size&&Math.max(size.width,size.height)>edge){const ratio=edge/Math.max(size.width,size.height);options={...options,resizeWidth:Math.max(1,Math.round(size.width*ratio)),resizeHeight:Math.max(1,Math.round(size.height*ratio)),resizeQuality:'medium'};}
       let bitmap=await createImageBitmap(blob,options),width=Number(response.headers.get('X-Image-Width'))||size?.width||bitmap.width,height=Number(response.headers.get('X-Image-Height'))||size?.height||bitmap.height,alpha=false;
-      if(width*height>100000000){bitmap.close();throw new Error('图片尺寸过大');}
+      if(width*height>100000000){bitmap.close();throw new Error('image size is too large');}
       if(edge&&Math.max(bitmap.width,bitmap.height)>edge){const ratio=edge/Math.max(bitmap.width,bitmap.height),surface=new OffscreenCanvas(Math.max(1,Math.round(bitmap.width*ratio)),Math.max(1,Math.round(bitmap.height*ratio)));surface.getContext('2d').drawImage(bitmap,0,0,surface.width,surface.height);bitmap.close();bitmap=surface.transferToImageBitmap();}
       if(['.png','.webp','.avif','.ico'].includes(ext)){const probe=new OffscreenCanvas(24,24),c=probe.getContext('2d',{willReadFrequently:true});c.drawImage(bitmap,0,0,24,24);const data=c.getImageData(0,0,24,24).data;for(let i=3;i<data.length;i+=4)if(data[i]<255){alpha=true;break;}}
       result={bitmap,width,height,alpha};
@@ -26,5 +26,5 @@ self.onmessage=async({data:{id,url,ext,edge,encodePng=false}})=>{
     const {bitmap}=result;
     if(encodePng){const surface=new OffscreenCanvas(bitmap.width,bitmap.height),context=surface.getContext('2d',{alpha:false});context.fillStyle='#000';context.fillRect(0,0,surface.width,surface.height);context.drawImage(bitmap,0,0);bitmap.close();const png=await (await surface.convertToBlob({type:'image/png'})).arrayBuffer();surface.width=surface.height=1;self.postMessage({id,png,width:result.width,height:result.height},[png]);}
     else self.postMessage({id,...result,bytes:bitmap.width*bitmap.height*4},[bitmap]);
-  }catch(error){self.postMessage({id,error:error.message||'图片无法解码'});}
+  }catch(error){self.postMessage({id,error:error.message||'image cannot be decoded'});}
 };

@@ -1,11 +1,11 @@
 const fs=require('node:fs/promises'),path=require('node:path'),{execFile}=require('node:child_process'),run=require('node:util').promisify(execFile);
 exports.installOriginal=async function(stage){
- const root=path.resolve(__dirname,'..'),target=path.join(root,'成品');stage=path.resolve(stage);
+ const root=path.resolve(__dirname,'..'),target=path.join(root,'dist');stage=path.resolve(stage);
  const inside=p=>{const relative=path.relative(root,path.resolve(p));if(!relative||relative.startsWith('..')||path.isAbsolute(relative))throw new Error('Installation path must stay inside this project');};
  inside(stage);inside(target);if(stage===target||stage.startsWith(target+path.sep)||target.startsWith(stage+path.sep))throw new Error('Staging and original installation must be separate');
- await fs.access(path.join(stage,'小马播放器.exe'));await fs.access(path.join(stage,'resources/app/src/index.html'));
- const result=await run('powershell.exe',['-NoProfile','-Command',"@(Get-CimInstance Win32_Process -Filter \"Name = '小马播放器.exe' OR Name = '小马播放器+录屏.exe' OR Name = '小马播放器核心.exe'\" | Where-Object { $_.ExecutablePath -eq $env:PLAYER_ORIGINAL_EXE -or $_.ExecutablePath -eq $env:PLAYER_RENAMED_EXE -or $_.ExecutablePath -eq $env:PLAYER_CORE_EXE } | Select-Object -ExpandProperty ProcessId) | ConvertTo-Json -Compress"],{windowsHide:true,env:{...process.env,PLAYER_ORIGINAL_EXE:path.join(target,'小马播放器.exe'),PLAYER_RENAMED_EXE:path.join(target,'小马播放器+录屏.exe'),PLAYER_CORE_EXE:path.join(target,'小马播放器核心.exe')}});
- if(result.stdout.trim()&&JSON.parse(result.stdout.trim()).length!==0)throw new Error('原播放器仍在运行，请关闭后再替换；暂存构建已经完成。');
+ await fs.access(path.join(stage,'Xiaoma Player.exe'));await fs.access(path.join(stage,'resources/app/src/index.html'));
+ const result=await run('powershell.exe',['-NoProfile','-Command',"@(Get-CimInstance Win32_Process -Filter \"Name = 'Xiaoma Player.exe' OR Name = 'Xiaoma Player + Recorder.exe' OR Name = 'Xiaoma Player Core.exe'\" | Where-Object { $_.ExecutablePath -eq $env:PLAYER_ORIGINAL_EXE -or $_.ExecutablePath -eq $env:PLAYER_RENAMED_EXE -or $_.ExecutablePath -eq $env:PLAYER_CORE_EXE } | Select-Object -ExpandProperty ProcessId) | ConvertTo-Json -Compress"],{windowsHide:true,env:{...process.env,PLAYER_ORIGINAL_EXE:path.join(target,'Xiaoma Player.exe'),PLAYER_RENAMED_EXE:path.join(target,'Xiaoma Player + Recorder.exe'),PLAYER_CORE_EXE:path.join(target,'Xiaoma Player Core.exe')}});
+ if(result.stdout.trim()&&JSON.parse(result.stdout.trim()).length!==0)throw new Error('Original player is still running; please close it before replacement; build cache has already been completed.');
  const backup=path.join(root,'.runtime/in-place-backups',new Date().toISOString().replace(/[:.]/g,'-'));inside(backup);await fs.mkdir(backup,{recursive:true});await fs.mkdir(target,{recursive:true});
  let previous;try{previous=JSON.parse(await fs.readFile(path.join(root,'.runtime/last-in-place-repair.json'),'utf8'));}catch{}let originalPackage;try{originalPackage=JSON.parse(await fs.readFile(path.join(target,'resources/app/package.json'),'utf8'));}catch{}
  const legacyBackup=originalPackage&&!originalPackage.engine?backup:previous?.legacyBackup||previous?.backup;
@@ -18,6 +18,6 @@ exports.installOriginal=async function(stage){
   for(const entry of old){const from=path.join(backup,entry),to=path.join(target,entry);inside(from);inside(to);await fs.rename(from,to);}throw error;
  }
  await fs.writeFile(path.join(root,'.runtime/last-in-place-repair.json'),JSON.stringify({target,backup,legacyBackup,stage,preservedProfile:path.join(target,'.data'),at:new Date().toISOString()},null,2));
- console.log('已修复原程序：'+path.join(target,'小马播放器.exe'));console.log('原程序备份：'+backup);
+ console.log('Original program has been fixed: '+path.join(target,'Xiaoma Player.exe'));console.log('Backup of original program: '+backup);
 };
 if(require.main===module)exports.installOriginal(process.argv[2]).catch(error=>{console.error(error);process.exitCode=1;});

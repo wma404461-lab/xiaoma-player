@@ -11,8 +11,8 @@ export function decodeFormat(buffer,ext,edge){
   if(ext==='.exr')decoded=new EXRLoader().setDataType(edge?HalfFloatType:FloatType).parse(buffer);
   else if(ext==='.hdr')decoded=new HDRLoader().setDataType(FloatType).parse(buffer);
   else if(ext==='.tga')decoded=new TGALoader().parse(buffer);
-  else{const pages=UTIF.decode(buffer),page=pages.find(i=>i.t256&&i.t257)||pages[0];if(!page)throw new Error('TIFF 内没有图像');UTIF.decodeImage(buffer,page);decoded={width:page.width,height:page.height,data:UTIF.toRGBA8(page)};}
-  const {width,height}=decoded;if(!width||!height||width*height>100000000)throw new Error('图片尺寸过大');
+  else{const pages=UTIF.decode(buffer),page=pages.find(i=>i.t256&&i.t257)||pages[0];if(!page)throw new Error('TIFF no image inside');UTIF.decodeImage(buffer,page);decoded={width:page.width,height:page.height,data:UTIF.toRGBA8(page)};}
+  const {width,height}=decoded;if(!width||!height||width*height>100000000)throw new Error('image size is too large');
   const ratio=edge?Math.min(1,edge/Math.max(width,height)):1,w=Math.max(1,Math.round(width*ratio)),h=Math.max(1,Math.round(height*ratio)),floating=ext==='.exr'||ext==='.hdr',half=decoded.data instanceof Uint16Array&&floating;
   if(half)halfTables();const components=Math.round(decoded.data.length/(width*height)),rgba=new Uint8ClampedArray(w*h*4);let alpha=false;
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const sx=Math.min(width-1,Math.floor((x+.5)*width/w)),sy=Math.min(height-1,Math.floor((y+.5)*height/h)),sourceY=ext==='.exr'?height-1-sy:sy,source=(sourceY*width+sx)*components,dest=(y*w+x)*4,r=decoded.data[source],g=components>=3?decoded.data[source+1]:r,b=components>=3?decoded.data[source+2]:r;rgba[dest]=half?halfColor[r]:floating?display(r):r;rgba[dest+1]=half?halfColor[g]:floating?display(g):g;rgba[dest+2]=half?halfColor[b]:floating?display(b):b;const a=components===4?decoded.data[source+3]:(floating?1:255);rgba[dest+3]=half&&components===4?halfAlpha[a]:floating?Math.max(0,Math.min(255,Math.round(a*255))):a;if(rgba[dest+3]<255)alpha=true;}

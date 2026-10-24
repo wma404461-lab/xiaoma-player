@@ -16,12 +16,12 @@ sealed class RecorderBar : RecorderOverlayForm {
  static bool ReadMotionSetting(){return !SystemInformation.HighContrast;}
  public RecorderBar(Action onPause,Action onStop,Action onExit=null,Action onStart=null){
   this.onPause=onPause;this.onStop=onStop;this.onExit=onExit;this.onStart=onStart;
-  Text="录屏控制条";FormBorderStyle=FormBorderStyle.None;TopMost=true;ShowInTaskbar=false;StartPosition=FormStartPosition.Manual;AutoScaleMode=AutoScaleMode.None;Size=new Size(338,46);BackColor=Color.FromArgb(17,29,48);ForeColor=Color.White;DoubleBuffered=true;
-  time=new Label{Text="已框选",AutoSize=true,ForeColor=ForeColor,Font=new Font("Segoe UI",9)};
+  Text="Screen recording control bar";FormBorderStyle=FormBorderStyle.None;TopMost=true;ShowInTaskbar=false;StartPosition=FormStartPosition.Manual;AutoScaleMode=AutoScaleMode.None;Size=new Size(338,46);BackColor=Color.FromArgb(17,29,48);ForeColor=Color.White;DoubleBuffered=true;
+  time=new Label{Text="Region selected",AutoSize=true,ForeColor=ForeColor,Font=new Font("Segoe UI",9)};
   primary=Make();stop=Make();exit=Make();Controls.Add(time);Controls.Add(primary);Controls.Add(stop);Controls.Add(exit);
   primary.Click+=(s,e)=>{if(compact){compactMenu.Show(primary,new Point(0,primary.Height));return;}PrimaryAction();};
   stop.Click+=(s,e)=>StopAction();exit.Click+=(s,e)=>ExitAction();
-  startItem=new ToolStripMenuItem("开始录制",null,(s,e)=>PrimaryAction());pauseItem=new ToolStripMenuItem("暂停",null,(s,e)=>PrimaryAction());stopItem=new ToolStripMenuItem("结束并保存",null,(s,e)=>StopAction());exitItem=new ToolStripMenuItem("退出",null,(s,e)=>ExitAction());compactMenu.Items.AddRange(new ToolStripItem[]{startItem,pauseItem,stopItem,exitItem});
+  startItem=new ToolStripMenuItem("Start recording",null,(s,e)=>PrimaryAction());pauseItem=new ToolStripMenuItem("Pause",null,(s,e)=>PrimaryAction());stopItem=new ToolStripMenuItem("End and save",null,(s,e)=>StopAction());exitItem=new ToolStripMenuItem("Exit",null,(s,e)=>ExitAction());compactMenu.Items.AddRange(new ToolStripItem[]{startItem,pauseItem,stopItem,exitItem});
   UpdatePhase(TimeSpan.Zero,onStart==null,false,onStart==null?"recording":"idle");
   animation.Tick+=(s,e)=>{if(unchecked(Environment.TickCount-lastMotionPoll)>1000){lastMotionPoll=Environment.TickCount;motionAllowed=ReadMotionSetting();animation.Interval=motionAllowed?33:1000;}if(Visible&&motionAllowed)Invalidate();};
   Shown+=(s,e)=>{NativeRecorder.SetWindowDisplayAffinity(Handle,0x11);animation.Start();};
@@ -37,7 +37,7 @@ sealed class RecorderBar : RecorderOverlayForm {
  }
  void LayoutControls(Size size){
   time.Visible=!compact;stop.Visible=!compact&&activeState&&!processing;exit.Visible=!compact;
-  if(compact){primary.Bounds=new Rectangle(2,2,Math.Max(8,size.Width-4),Math.Max(8,size.Height-4));primary.Text=size.Width>=88?(phase=="saving"?"保存中":phase=="preparing"?"准备中":activeState?(pausedState?"● 暂停":"● 录制"):"● 录屏"):"●";primary.AccessibleName=time.Text+"，录屏控制菜单";primary.Enabled=true;return;}
+  if(compact){primary.Bounds=new Rectangle(2,2,Math.Max(8,size.Width-4),Math.Max(8,size.Height-4));primary.Text=size.Width>=88?(phase=="saving"?"Saving...":phase=="preparing"?"Preparing":activeState?(pausedState?"● Pause":"● Record"):"● Recorder"):"●";primary.AccessibleName=time.Text+", Screen recording control menu";primary.Enabled=true;return;}
   int x=(int)(115*layoutScale),y=8;
   time.Location=new Point((int)(24*layoutScale),14);primary.Bounds=new Rectangle(x,y,(int)((activeState&&!processing?68:138)*layoutScale),30);
   stop.Bounds=new Rectangle((int)(188*layoutScale),y,(int)(68*layoutScale),30);exit.Bounds=new Rectangle((int)(261*layoutScale),y,(int)(68*layoutScale),30);
@@ -57,16 +57,16 @@ sealed class RecorderBar : RecorderOverlayForm {
  public void UpdateState(TimeSpan elapsed,bool active,bool paused,bool saving){UpdatePhase(elapsed,active,paused,saving?"saving":active?(paused?"paused":"recording"):"idle");}
  public void UpdatePhase(TimeSpan elapsed,bool active,bool paused,string state){
   phase=state;activeState=active;pausedState=paused;processing=state=="preparing"||state=="saving";
-  time.Text=state=="preparing"?"准备中":state=="saving"?"保存中":active?elapsed.ToString(@"hh\:mm\:ss"):"已框选";
-  primary.Text=state=="preparing"?"准备中…":state=="saving"?"保存中…":!active?"开始录制":paused?"继续":"暂停";primary.Enabled=!processing;primary.RecordingAccent=(!active||compact)&&!processing;
-  stop.Text="结束";stop.Enabled=active&&!processing;stop.RecordingAccent=true;exit.Text="退出";exit.Enabled=state!="saving";
-  startItem.Visible=!active;startItem.Text=state=="preparing"?"正在准备…":"开始录制";startItem.Enabled=!processing;pauseItem.Visible=active;pauseItem.Text=state=="saving"?"正在保存…":state=="preparing"?"正在准备…":paused?"继续":"暂停";pauseItem.Enabled=active&&!processing;stopItem.Visible=active&&!processing;stopItem.Enabled=active&&!processing;exitItem.Enabled=state!="saving";
+  time.Text=state=="preparing"?"Preparing":state=="saving"?"Saving...":active?elapsed.ToString(@"hh\:mm\:ss"):"Region selected";
+  primary.Text=state=="preparing"?"Preparing…":state=="saving"?"Saving...…":!active?"Start recording":paused?"Resume":"Pause";primary.Enabled=!processing;primary.RecordingAccent=(!active||compact)&&!processing;
+  stop.Text="Stop";stop.Enabled=active&&!processing;stop.RecordingAccent=true;exit.Text="Exit";exit.Enabled=state!="saving";
+  startItem.Visible=!active;startItem.Text=state=="preparing"?"Preparing…":"Start recording";startItem.Enabled=!processing;pauseItem.Visible=active;pauseItem.Text=state=="saving"?"Saving…":state=="preparing"?"Preparing…":paused?"Resume":"Pause";pauseItem.Enabled=active&&!processing;stopItem.Visible=active&&!processing;stopItem.Enabled=active&&!processing;exitItem.Enabled=state!="saving";
   LayoutControls(Size);Invalidate();
  }
  public object ControlState(){return new{primaryText=primary.Text,primaryEnabled=primary.Enabled,stopVisible=stop.Visible,stopEnabled=stop.Enabled,exitEnabled=exit.Enabled,phase=phase,timeText=time.Text,compact=compact,menuStatus=processing?pauseItem.Text:"",startAvailable=!activeState&&!processing,pauseAvailable=activeState&&!processing,stopAvailable=activeState&&!processing,redPrimary=primary.RecordingAccent,redStop=stop.RecordingAccent,motionEnabled=motionAllowed,paints=paints,maxPaintMs=maxPaintMs};}
  public void ClickForTest(string action){
-  if(compact){ToolStripMenuItem item=action=="start"?startItem:action=="pause"?pauseItem:action=="stop"?stopItem:action=="exit"?exitItem:null;if(item==null||!item.Available||!item.Enabled)throw new InvalidOperationException("当前菜单操作不可用："+action+" / "+phase+" / available="+(item!=null&&item.Available)+" / enabled="+(item!=null&&item.Enabled));item.PerformClick();return;}
-  Button b=action=="start"&&!activeState?primary:action=="pause"&&activeState?primary:action=="stop"?stop:action=="exit"?exit:null;if(b==null||!b.Visible||!b.Enabled)throw new InvalidOperationException("当前按钮不可用："+action);b.PerformClick();
+  if(compact){ToolStripMenuItem item=action=="start"?startItem:action=="pause"?pauseItem:action=="stop"?stopItem:action=="exit"?exitItem:null;if(item==null||!item.Available||!item.Enabled)throw new InvalidOperationException("Current menu action is unavailable: "+action+" / "+phase+" / available="+(item!=null&&item.Available)+" / enabled="+(item!=null&&item.Enabled));item.PerformClick();return;}
+  Button b=action=="start"&&!activeState?primary:action=="pause"&&activeState?primary:action=="stop"?stop:action=="exit"?exit:null;if(b==null||!b.Visible||!b.Enabled)throw new InvalidOperationException("Current button is unavailable: "+action);b.PerformClick();
  }
  public void SavePreview(string file){using(var image=new Bitmap(Width,Height)){DrawToBitmap(image,new Rectangle(Point.Empty,Size));image.Save(file,ImageFormat.Png);}}
  protected override void Dispose(bool disposing){if(disposing){animation.Stop();animation.Dispose();compactMenu.Dispose();}base.Dispose(disposing);}

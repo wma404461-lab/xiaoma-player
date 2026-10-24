@@ -3,9 +3,9 @@ const {encodingPlan,encodingArguments}=require('./export-encoding.cjs');
 class SequenceExporter {
  constructor(folder,urlFor,onProgress){this.folder=path.resolve(folder);this.urlFor=urlFor;this.onProgress=onProgress;this.jobs=new Map();}
  async start(item,output,options){
-  if([...this.jobs.values()].some(job=>!job.finished))throw new Error('已有序列正在合成');
+  if([...this.jobs.values()].some(job=>!job.finished))throw new Error('A sequence is already being composed');
   const fps=Number(options.fps),start=Number(options.start??0),end=Number(options.end??item.span-1);
-  if(!Number.isFinite(fps)||fps<1||fps>240||!Number.isInteger(start)||!Number.isInteger(end)||start<0||end<start||end>=item.span||path.extname(output).toLowerCase()!=='.mp4')throw new Error('合成参数不正确');
+  if(!Number.isFinite(fps)||fps<1||fps>240||!Number.isInteger(start)||!Number.isInteger(end)||start<0||end<start||end>=item.span||path.extname(output).toLowerCase()!=='.mp4')throw new Error('Composition parameters are incorrect');
   const plan=encodingPlan(options.targetMB,end-start+1,fps),id=crypto.randomUUID(),temporary=path.join(path.dirname(output),'.xiaoma-'+id+'.mp4'),frames=[];let source=0;
   for(let index=start;index<=end;index++){const number=item.first+index;while(source+1<item.frames.length&&item.frames[source+1].number<=number)source++;frames.push({url:this.urlFor(item.frames[source].path),ext:item.extension});}
   const directory=plan.passes===2?path.join(this.folder,id):null;
@@ -24,27 +24,27 @@ class SequenceExporter {
   await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});
  }
  progress(job,phase,done){this.onProgress({id:job.id,phase,done,total:job.frames.length,pass:job.pass,passes:job.plan.passes,targetMB:job.plan.targetMB});}
- get(id){const job=this.jobs.get(id);if(!job||job.finished||job.cancelled)throw new Error('合成任务已结束');return job;}
+ get(id){const job=this.jobs.get(id);if(!job||job.finished||job.cancelled)throw new Error('Composition task has ended');return job;}
  async write(id,index,png){
   const job=this.get(id);
-  if(job.writing||index!==job.count||index>=job.frames.length||!(png instanceof ArrayBuffer)||png.byteLength>256*1024*1024)throw new Error('合成帧数据无效');
+  if(job.writing||index!==job.count||index>=job.frames.length||!(png instanceof ArrayBuffer)||png.byteLength>256*1024*1024)throw new Error('Composition frame data is invalid');
   const bytes=Buffer.from(png);
-  if(bytes.length<24||bytes.readUInt32BE(0)!==0x89504e47||bytes.readUInt32BE(4)!==0x0d0a1a0a)throw new Error('合成图像无效');
+  if(bytes.length<24||bytes.readUInt32BE(0)!==0x89504e47||bytes.readUInt32BE(4)!==0x0d0a1a0a)throw new Error('Composition image is invalid');
   const width=bytes.readUInt32BE(16),height=bytes.readUInt32BE(20);
-  if(!width||!height||width*height>100000000)throw new Error('合成图像过大');
-  if(job.width&&(job.width!==width||job.height!==height))throw new Error('序列里的图片尺寸不一致');
+  if(!width||!height||width*height>100000000)throw new Error('Composed image is too large');
+  if(job.width&&(job.width!==width||job.height!==height))throw new Error('Image dimensions in the sequence are inconsistent');
   job.width=width;job.height=height;job.writing=true;
   try{await new Promise((resolve,reject)=>job.child.stdin.write(bytes,error=>error?reject(error):resolve()));job.count++;this.progress(job,'read',job.count);return true;}finally{job.writing=false;}
  }
  async closePass(job){
-  if(job.count!==job.frames.length||job.writing)throw new Error('序列没有完整读取');
+  if(job.count!==job.frames.length||job.writing)throw new Error('Sequence not fully read');
   job.child.stdin.end();const code=await job.closed;
-  if(job.cancelled)throw new Error('已取消合成');
-  if(code!==0)throw new Error(job.error.includes('encoder')?'本机暂时无法编码此尺寸的 MP4':'MP4 合成失败，请换一个保存位置后重试');
+  if(job.cancelled)throw new Error('Composition canceled');
+  if(code!==0)throw new Error(job.error.includes('encoder')?'This device currently cannot encode this resolution MP4':'MP4 Composition failed, please try saving to a different location and retry');
  }
  async nextPass(id){
-  const job=this.get(id);if(job.pass>=job.plan.passes)throw new Error('不需要再次分析');
-  try{await this.closePass(job);if(job.cancelled)throw new Error('已取消合成');job.pass++;await this.spawnPass(job);this.progress(job,'read',0);return {pass:job.pass};}catch(error){await this.cancel(id);throw error;}
+  const job=this.get(id);if(job.pass>=job.plan.passes)throw new Error('No need to re-analyze');
+  try{await this.closePass(job);if(job.cancelled)throw new Error('Composition canceled');job.pass++;await this.spawnPass(job);this.progress(job,'read',0);return {pass:job.pass};}catch(error){await this.cancel(id);throw error;}
  }
  async cleanupLogs(job){
   if(!job.directory||path.dirname(job.directory)!==this.folder)return;
@@ -53,7 +53,7 @@ class SequenceExporter {
  async finish(id){
   const job=this.get(id);
   try{
-   if(job.pass!==job.plan.passes)throw new Error('视频分析尚未完成');
+   if(job.pass!==job.plan.passes)throw new Error('Video analysis is not yet complete');
    await this.closePass(job);const stat=await fs.stat(job.temporary);await fs.rename(job.temporary,job.output);
    job.finished=true;this.jobs.delete(id);await this.cleanupLogs(job);this.progress(job,'done',job.count);
    return {path:job.output,width:job.plan.passes===2?Math.ceil(job.width/2)*2:job.width,height:job.plan.passes===2?Math.ceil(job.height/2)*2:job.height,frames:job.count,fps:job.fps,size:stat.size,targetMB:job.plan.targetMB};

@@ -16,12 +16,12 @@ static class NativeFolderPicker {
   IShellItem initial=null,result=null;IntPtr displayName=IntPtr.Zero;
   try{
    uint options;dialog.GetOptions(out options);dialog.SetOptions(options|PickFolders|ForceFileSystem|PathMustExist|NoChangeDirectory);
-   dialog.SetTitle(title);dialog.SetOkButtonLabel("选择文件夹");
+   dialog.SetTitle(title);dialog.SetOkButtonLabel("Choose folder");
    string folder=ExistingFolder(initialFolder);
    if(folder!=null){Guid iid=ShellItemId;int create=SHCreateItemFromParsingName(folder,IntPtr.Zero,ref iid,out initial);if(create>=0)dialog.SetFolder(initial);}
    int status=dialog.Show(owner==null?IntPtr.Zero:owner.Handle);if(status==Cancelled)return null;Marshal.ThrowExceptionForHR(status);
    dialog.GetResult(out result);result.GetDisplayName(0x80058000,out displayName);
-   string selected=Marshal.PtrToStringUni(displayName);if(String.IsNullOrWhiteSpace(selected)||!Directory.Exists(selected))throw new IOException("请选择存在的文件夹");return Path.GetFullPath(selected);
+   string selected=Marshal.PtrToStringUni(displayName);if(String.IsNullOrWhiteSpace(selected)||!Directory.Exists(selected))throw new IOException("Please select an existing folder");return Path.GetFullPath(selected);
   }finally{
    if(displayName!=IntPtr.Zero)Marshal.FreeCoTaskMem(displayName);
    if(result!=null)Marshal.FinalReleaseComObject(result);if(initial!=null)Marshal.FinalReleaseComObject(initial);Marshal.FinalReleaseComObject(dialog);

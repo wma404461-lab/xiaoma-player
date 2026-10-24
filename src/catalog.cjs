@@ -31,7 +31,7 @@ function groupFiles(files, urlFor) {
     const missing=[];for(let i=1;i<list.length;i++)if(list[i].number>list[i-1].number+1)missing.push([list[i-1].number+1,list[i].number-1]);
     const frames=list.map(f=>({path:f.path,name:path.basename(f.path),url:urlFor(f.path),number:f.number,size:f.size,mtime:f.mtime,ext:f.extension}));
     const head=list[0];
-    output.push({id:idFor('sequence:'+key),kind:'sequence',name:head.prefix.replace(/[._ -]+$/,'')||'序列帧',extension:head.extension,frames,first,last,span,missing,missingCount:span-list.length,folder:path.dirname(head.path),path:head.path,url:frames[0].url,size:list.reduce((s,f)=>s+f.size,0),mtime:Math.max(...list.map(f=>f.mtime)),sequenceKey:key});
+    output.push({id:idFor('sequence:'+key),kind:'sequence',name:head.prefix.replace(/[._ -]+$/,'')||'Sequence frames',extension:head.extension,frames,first,last,span,missing,missingCount:span-list.length,folder:path.dirname(head.path),path:head.path,url:frames[0].url,size:list.reduce((s,f)=>s+f.size,0),mtime:Math.max(...list.map(f=>f.mtime)),sequenceKey:key});
   }
   for(const f of plain)output.push({id:idFor(f.path.toLowerCase()),kind:f.kind,name:path.basename(f.path),extension:path.extname(f.path).toLowerCase(),path:f.path,folder:path.dirname(f.path),url:urlFor(f.path),size:f.size,mtime:f.mtime});
   return output.sort((a,b)=>collator.compare(a.folder,b.folder)||collator.compare(a.name,b.name));
@@ -46,25 +46,25 @@ class Catalog {
     const add=(p,stat=null)=>{if(files.size>=50000){capped=true;return;}const kind=kindFor(p),key=p.toLowerCase();if(kind&&!files.has(key))files.set(key,{path:p,size:stat?.size||0,mtime:stat?.mtimeMs||0,kind});};
     const walk=async (directory,depth=0)=>{
       const key=directory.toLowerCase();if(seenDirectories.has(key)||depth>8||capped)return;seenDirectories.add(key);
-      try{const entries=await fs.readdir(directory,{withFileTypes:true});for(const entry of entries){if(capped)break;if(entry.name.startsWith('.')||entry.name==='node_modules')continue;const p=path.join(directory,entry.name);if(entry.isDirectory())await walk(p,depth+1);else if(entry.isFile()&&kindFor(p))add(p);}}catch{errors.push('无法读取文件夹 '+path.basename(directory));}
+      try{const entries=await fs.readdir(directory,{withFileTypes:true});for(const entry of entries){if(capped)break;if(entry.name.startsWith('.')||entry.name==='node_modules')continue;const p=path.join(directory,entry.name);if(entry.isDirectory())await walk(p,depth+1);else if(entry.isFile()&&kindFor(p))add(p);}}catch{errors.push('Cannot read folder '+path.basename(directory));}
     };
     const expanded=new Set(),directoryEntries=new Map();
     const entriesFor=async folder=>{if(!directoryEntries.has(folder))directoryEntries.set(folder,await fs.readdir(folder,{withFileTypes:true}));return directoryEntries.get(folder);};
     for(const p of selected){
-      try{const stat=await fs.stat(p);if(stat.isDirectory()){await walk(p);continue;}if(!kindFor(p)){errors.push('暂不支持 '+(path.extname(p)||'该类型')+'：'+path.basename(p));continue;}add(p,stat);
+      try{const stat=await fs.stat(p);if(stat.isDirectory()){await walk(p);continue;}if(!kindFor(p)){errors.push('Not supported yet '+(path.extname(p)||'This type')+': '+path.basename(p));continue;}add(p,stat);
         const parsed=frameName(p);if(parsed&&!expanded.has(parsed.familyKey)){expanded.add(parsed.familyKey);const names=await entriesFor(path.dirname(p));for(const name of names){if(!name.isFile())continue;const sibling=path.join(path.dirname(p),name.name),other=frameName(sibling);if(other?.familyKey===parsed.familyKey)add(sibling);}}
-      }catch{errors.push('找不到 '+path.basename(p));}
+      }catch{errors.push('Not found '+path.basename(p));}
     }
     let items=groupFiles([...files.values()],this.urlFor);
     const primary=selected.find(p=>kindFor(p));
     const matches=i=>primary&&(i.path.toLowerCase()===primary.toLowerCase()||i.frames?.some(f=>f.path.toLowerCase()===primary.toLowerCase()));
     const galleryKind=items.find(matches)?.kind;
     if(selected.length===1&&['image','video'].includes(galleryKind)){
-      try{const folder=path.dirname(primary),entries=await entriesFor(folder);for(const entry of entries){if(capped)break;if(entry.isFile()&&kindFor(entry.name)===galleryKind)add(path.join(folder,entry.name));}items=groupFiles([...files.values()],this.urlFor);}catch{errors.push('无法读取同文件夹的其他素材');}
+      try{const folder=path.dirname(primary),entries=await entriesFor(folder);for(const entry of entries){if(capped)break;if(entry.isFile()&&kindFor(entry.name)===galleryKind)add(path.join(folder,entry.name));}items=groupFiles([...files.values()],this.urlFor);}catch{errors.push('Cannot read other assets in the same folder');}
     }
     const index=primary?items.findIndex(matches):0;
     this.items=new Map(items.map(i=>[i.id,i]));
-    if(capped)errors.push('文件较多，已读取前 50000 个文件');
+    if(capped)errors.push('Too many files, only first 50000 files loaded');
     return {items,selectedIndex:Math.max(0,index),errors,fileCount:files.size};
   }
   async refreshSequence(id){

@@ -9,15 +9,15 @@ class OfficePreview {
     dynamic app=null,doc=null; object security=null,alerts=null; bool owned=false;
     var before=Process.GetProcesses().Select(p=>p.Id).ToArray();
     try {
-      if(args.Length!=2||!File.Exists(args[0]))throw new Exception("无效的文档路径");
+      if(args.Length!=2||!File.Exists(args[0]))throw new Exception("Invalid document path");
       string ext=Path.GetExtension(args[0]).ToLowerInvariant(),kind;
       if(new[]{".doc",".docx",".docm",".rtf",".odt"}.Contains(ext))kind="Word";
       else if(new[]{".ppt",".pptx",".pptm",".pps",".ppsx",".odp"}.Contains(ext))kind="PowerPoint";
       else if(new[]{".xls",".xlsx",".xlsm",".ods"}.Contains(ext))kind="Excel";
-      else throw new Exception("此文档格式尚未支持");
+      else throw new Exception("This document format is not supported");
       app=Activator.CreateInstance(Type.GetTypeFromProgID(kind+".Application",true));
       int count=kind=="Word"?(int)app.Documents.Count:kind=="PowerPoint"?(int)app.Presentations.Count:(int)app.Workbooks.Count;
-      if(count>0)throw new Exception("请先关闭正在使用的 Office 文档后再预览");
+      if(count>0)throw new Exception("Please close the currently used Office document before previewing");
       owned=Process.GetProcesses().Any(p=>!before.Contains(p.Id)&&new[]{"WINWORD","POWERPNT","EXCEL","wps","wpp","et"}.Contains(p.ProcessName,StringComparer.OrdinalIgnoreCase));
       security=app.AutomationSecurity;app.AutomationSecurity=3;alerts=app.DisplayAlerts;
       if(kind=="Word") {
@@ -35,7 +35,7 @@ class OfficePreview {
         doc=app.Workbooks.Open(args[0],0,true);
         doc.ExportAsFixedFormat(0,args[1]);doc.Close(false);doc=null;
       }
-      if(!File.Exists(args[1]))throw new Exception("文档预览没有生成");
+      if(!File.Exists(args[1]))throw new Exception("Document preview was not generated");
       Console.WriteLine("{\"Success\":true}");return 0;
     }catch(Exception error){Console.WriteLine(new JavaScriptSerializer().Serialize(new{Success=false,Error=error.Message}));return 1;}
     finally{

@@ -1,0 +1,19 @@
+Xiaoma Player + Recorder - recording guide
+
+1. Open Recorder from the application.
+2. Choose an output folder, click Select region, and drag out the capture area. A continuous region may span multiple monitors.
+3. Click Start recording. Recording begins immediately without a countdown. The default is original screen resolution, 60 fps and system audio.
+4. Use Pause/Resume on the floating controls. Stop ends and saves the recording, then opens it for playback. Show in folder locates the result.
+5. Use Trim to drag the two range handles and Save clip. The new clip is saved beside the original with a numbered name if needed. The original remains intact.
+
+The highlighted border marks the selected region. Reselect changes it. Closing Recorder or the application removes the controls and border; active recordings are saved first. Controls are excluded from capture where the recording backend supports it. Enable Microphone to record your voice.
+
+Hotkeys: Ctrl+Alt+R starts/stops recording; Ctrl+Alt+P pauses/resumes. The timer stops while paused. You may stop directly from the paused state.
+
+The default folder is Videos/Xiaoma Recordings. The Recorder panel lets you select or open the output folder. More settings includes original resolution, 4K/1080p, 30/60 fps, automatic stop and audio devices. 4K output cannot recover detail absent from the captured display.
+
+Saving shows progress. A failed save retains recoverable files and provides a button to open their location. Wait for saving to finish; do not terminate the process. The application can start another recording after a failed save.
+
+When the primary capture component cannot start, the compatibility backend uses GDI capture, WASAPI audio and an available encoder. Under heavy load it may repeat frames to preserve audio/video timing. Recording reports record captured/submitted/repeated frames, missed capture slots and stage timings. These are distinct from actual screen refresh and container frame rate. Zero latency and perfect frame delivery under every workload are not guaranteed.
+
+The recorder prewarms capture and encoder components when its panel opens. Buffers are bounded. Remote desktop operation depends on the session, graphics driver and capture backend; verify the saved result for your environment.

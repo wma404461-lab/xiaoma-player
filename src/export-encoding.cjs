@@ -1,8 +1,8 @@
 function encodingPlan(targetMB,frames,fps){
  if(targetMB===undefined||targetMB===null)return {passes:1,targetMB:null,bitrate:null};
- const size=Number(targetMB);if(!Number.isFinite(size)||size<.1||size>100000)throw new Error('目标大小请填写 0.1 到 100000 MB');
+ const size=Number(targetMB);if(!Number.isFinite(size)||size<.1||size>100000)throw new Error('Please enter target size 0.1 to 100000 MB');
  const budget=Math.floor(size*1024*1024),overhead=Math.max(16384,frames*64),bitrate=Math.floor((budget*.97-overhead)*8/(frames/fps));
- if(bitrate<8000)throw new Error('这段序列较长，目标大小太小，请调大 MB 数值');
+ if(bitrate<8000)throw new Error('This sequence is long and the target size is too small, please increase it MB value');
  return {passes:2,targetMB:size,bitrate};
 }
 function encodingArguments(job,pass){

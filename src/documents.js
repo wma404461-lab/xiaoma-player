@@ -9,13 +9,13 @@ export class DocumentView {
       try{url=(await window.viewer.documentPreview(item.id)).url;}
       catch(error){if(item.extension==='.docx'){await this.docx(item);return;}if(item.extension==='.pptx'){await this.pptx(item);return;}throw error;}
     }
-    const initial=await fetch(url,{headers:{Range:'bytes=0-65535'}});if(!initial.ok)throw new Error('文档无法读取');
+    const initial=await fetch(url,{headers:{Range:'bytes=0-65535'}});if(!initial.ok)throw new Error('Document cannot be read');
     const first=new Uint8Array(await initial.arrayBuffer()),total=Number(initial.headers.get('content-range')?.match(/\/(\d+)$/)?.[1]||initial.headers.get('content-length')||first.length);
     sharedWorker??=new pdfjs.PDFWorker({name:'xiaoma-pdf'});
     const options={worker:sharedWorker,isEvalSupported:false,useSystemFonts:true,cMapUrl:new URL('./pdf/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./pdf/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./pdf/wasm/',import.meta.url).href,useWorkerFetch:false,disableAutoFetch:true};
     if(total>first.length){const transport=new pdfjs.PDFDataRangeTransport(total,first);transport.requestDataRange=(begin,end)=>{const controller=new AbortController();this.controllers.add(controller);fetch(url,{headers:{Range:`bytes=${begin}-${end-1}`},signal:controller.signal}).then(r=>r.arrayBuffer()).then(buffer=>transport.onDataRange(begin,new Uint8Array(buffer))).catch(error=>{if(error.name!=='AbortError')this.loadingTask?.destroy();}).finally(()=>this.controllers.delete(controller));};transport.abort=()=>this.controllers.forEach(controller=>controller.abort());this.loadingTask=pdfjs.getDocument({...options,range:transport,length:total,rangeChunkSize:65536});}
     else this.loadingTask=pdfjs.getDocument({...options,data:first});
-    this.loadingTask.onPassword=()=>{this.loadingTask.destroy();this.passwordError=new Error('此 PDF 需要密码，请先在原软件中解锁后查看');};
+    this.loadingTask.onPassword=()=>{this.loadingTask.destroy();this.passwordError=new Error('This PDF Password required, please unlock in original software first');};
     try{this.pdf=await this.loadingTask.promise;}catch(error){throw this.passwordError||error;}
     if(this.disposed){await this.loadingTask.destroy();return;}this.pages=this.pdf.numPages;this.mode='pdf';await this.render();
   }

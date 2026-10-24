@@ -11,7 +11,7 @@ using System.Drawing;
 using ScreenRecorderLib;
 
 sealed class RecorderPreferences {
- public string folder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),"小马录屏");
+ public string folder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),"Xiaoma Recordings");
  public string preset="native",mode="region",display="",outputDevice="",inputDevice="";
  public bool systemAudio=true,microphone=false,cursor=true,minimize=true;
  public int fps=60,countdown=0,stopMinutes=0,schemaVersion=0;
@@ -45,44 +45,44 @@ sealed class NativeRecorderEngine : IDisposable {
  public object Config(){
   if(!busy){
    var names=Recorder.GetDisplays().ToDictionary(d=>d.DeviceName,d=>d.FriendlyName);
-   displays=Screen.AllScreens.OrderByDescending(s=>s.Primary).Select((s,i)=>{int w=s.Bounds.Width,h=s.Bounds.Height;IntPtr dc=CreateDC("DISPLAY",s.DeviceName,null,IntPtr.Zero);if(dc!=IntPtr.Zero){w=GetDeviceCaps(dc,118);h=GetDeviceCaps(dc,117);DeleteDC(dc);}return new RecorderSource{id=s.DeviceName,device=s.DeviceName,name="屏幕 "+(i+1)+(s.Primary?"（主屏幕）":"")+" · "+w+"×"+h,width=w,height=h,primary=s.Primary};}).ToList();
+   displays=Screen.AllScreens.OrderByDescending(s=>s.Primary).Select((s,i)=>{int w=s.Bounds.Width,h=s.Bounds.Height;IntPtr dc=CreateDC("DISPLAY",s.DeviceName,null,IntPtr.Zero);if(dc!=IntPtr.Zero){w=GetDeviceCaps(dc,118);h=GetDeviceCaps(dc,117);DeleteDC(dc);}return new RecorderSource{id=s.DeviceName,device=s.DeviceName,name="Screen "+(i+1)+(s.Primary?" (Main screen)":"")+" · "+w+"×"+h,width=w,height=h,primary=s.Primary};}).ToList();
    windows=Recorder.GetWindows().Where(w=>!string.IsNullOrWhiteSpace(w.Title)&&w.Handle!=owner.Handle&&(!w.Pid.HasValue||w.Pid.Value!=Process.GetCurrentProcess().Id)).Select(w=>new RecorderSource{id=w.Handle.ToInt64().ToString(),handle=w.Handle.ToInt64(),name=w.Title}).ToList();
   }
   return new{preferences=preferences,displays=displays,windows=windows,outputs=Recorder.GetSystemAudioLoopbackDevices().Select(d=>new{id=d.DeviceName,name=d.FriendlyName}).ToArray(),inputs=Recorder.GetSystemAudioCaptureDevices().Select(d=>new{id=d.DeviceName,name=d.FriendlyName}).ToArray(),region=RegionInfo(),status=Status()};
  }
  object RegionInfo(){return region==null?null:new{x=(int)region.Left,y=(int)region.Top,width=(int)region.Width,height=(int)region.Height,display=regionDisplay};}
- public object TestRegion(string display){if(!testing||busy)throw new Exception("仅测试可用");Config();var target=displays.First(d=>d.id==display);region=new ScreenRect(0,0,640,360);regionDisplay=target.id;return RegionInfo();}
+ public object TestRegion(string display){if(!testing||busy)throw new Exception("Available only for testing");Config();var target=displays.First(d=>d.id==display);region=new ScreenRect(0,0,640,360);regionDisplay=target.id;return RegionInfo();}
  public object SelectRegion(string display){
-  if(busy)throw new Exception("请先结束当前录制");var target=displays.FirstOrDefault(d=>d.id==display)??displays.FirstOrDefault();if(target==null)throw new Exception("没有可用屏幕");var screen=Screen.AllScreens.First(s=>s.DeviceName==target.device);
+  if(busy)throw new Exception("Please end current recording first");var target=displays.FirstOrDefault(d=>d.id==display)??displays.FirstOrDefault();if(target==null)throw new Exception("No available screens");var screen=Screen.AllScreens.First(s=>s.DeviceName==target.device);
   using(var picker=new RecorderRegionPicker(screen)){if(picker.ShowDialog(owner)==DialogResult.OK){Rectangle box=picker.Selection;double sx=(double)target.width/screen.Bounds.Width,sy=(double)target.height/screen.Bounds.Height;region=new ScreenRect((int)(box.Left*sx),(int)(box.Top*sy),(int)(box.Width*sx)/2*2,(int)(box.Height*sy)/2*2);regionDisplay=target.id;}}
   return RegionInfo();
  }
- public object ChooseFolder(){if(busy)throw new Exception("录制结束后可以更换保存位置");string selected=NativeFolderPicker.Show(owner,"录像保存在哪里",preferences.folder);if(selected!=null){preferences.folder=selected;Save();}return new{folder=preferences.folder};}
+ public object ChooseFolder(){if(busy)throw new Exception("After recording ends, you can change save location");string selected=NativeFolderPicker.Show(owner,"Where is the video saved?",preferences.folder);if(selected!=null){preferences.folder=selected;Save();}return new{folder=preferences.folder};}
  public object OpenFolder(){Directory.CreateDirectory(preferences.folder);Process.Start(new ProcessStartInfo(preferences.folder){UseShellExecute=true});return true;}
  static T Get<T>(Dictionary<string,object> args,string name,T fallback){object value;if(!args.TryGetValue(name,out value)||value==null)return fallback;return (T)Convert.ChangeType(value,typeof(T));}
  public object Prepare(){displays=RecorderSources.Displays();return new{ready=true};}
  public async Task<object> Start(Dictionary<string,object> args){
-  if(busy)throw new Exception("正在录制或保存，请稍候");displays=RecorderSources.Displays();
+  if(busy)throw new Exception("Recording or saving, please wait");displays=RecorderSources.Displays();
   string mode=Get(args,"mode",preferences.mode),display=Get(args,"display",preferences.display),preset=Get(args,"preset",preferences.preset),window=Get(args,"window","");
-  if(!new[]{"screen","window","region"}.Contains(mode)||!new[]{"4k","native","1080"}.Contains(preset))throw new Exception("录制选项不正确");
+  if(!new[]{"screen","window","region"}.Contains(mode)||!new[]{"4k","native","1080"}.Contains(preset))throw new Exception("Invalid recording settings");
   if(mode=="window")windows=Recorder.GetWindows().Where(w=>w.Handle!=owner.Handle).Select(w=>new RecorderSource{id=w.Handle.ToInt64().ToString(),handle=w.Handle.ToInt64(),name=w.Title}).ToList();
-  RecorderSource target=mode=="window"?windows.FirstOrDefault(w=>w.id==window):displays.FirstOrDefault(d=>d.id==display)??displays.FirstOrDefault();if(target==null)throw new Exception(mode=="window"?"请先选择要录的窗口":"没有可用屏幕");
-  if(mode=="window"&&(!IsWindow(new IntPtr(target.handle))||IsIconic(new IntPtr(target.handle))))throw new Exception("请打开目标窗口，再点击开始录制");
-  if(mode=="region"&&args.ContainsKey("region")){var box=(Dictionary<string,object>)args["region"];int x=Get(box,"x",0),y=Get(box,"y",0),w=Get(box,"width",0),h=Get(box,"height",0);if(x<0||y<0||w<32||h<32||x+w>target.width||y+h>target.height)throw new Exception("录制范围已失效，请重新框选");region=new ScreenRect(x,y,w/2*2,h/2*2);regionDisplay=target.id;}
-  if(mode=="region"&&(region==null||regionDisplay!=target.id))throw new Exception("请先点击“框选范围”");
+  RecorderSource target=mode=="window"?windows.FirstOrDefault(w=>w.id==window):displays.FirstOrDefault(d=>d.id==display)??displays.FirstOrDefault();if(target==null)throw new Exception(mode=="window"?"Please select the window to record first":"No available screens");
+  if(mode=="window"&&(!IsWindow(new IntPtr(target.handle))||IsIconic(new IntPtr(target.handle))))throw new Exception("Please open the target window and click ’Start Recording’");
+  if(mode=="region"&&args.ContainsKey("region")){var box=(Dictionary<string,object>)args["region"];int x=Get(box,"x",0),y=Get(box,"y",0),w=Get(box,"width",0),h=Get(box,"height",0);if(x<0||y<0||w<32||h<32||x+w>target.width||y+h>target.height)throw new Exception("Recording area has expired, please reselect");region=new ScreenRect(x,y,w/2*2,h/2*2);regionDisplay=target.id;}
+  if(mode=="region"&&(region==null||regionDisplay!=target.id))throw new Exception("Please click ’Select Area’ first”");
   controllerControls=Get(args,"controllerControls",false);preferences.mode=mode;preferences.display=display;preferences.preset=preset;preferences.systemAudio=Get(args,"systemAudio",preferences.systemAudio);preferences.microphone=Get(args,"microphone",preferences.microphone);preferences.cursor=Get(args,"cursor",preferences.cursor);preferences.minimize=Get(args,"minimize",preferences.minimize);
   preferences.fps=Get(args,"fps",preferences.fps)==30?30:60;preferences.countdown=Math.Max(0,Math.Min(5,Get(args,"countdown",preferences.countdown)));preferences.stopMinutes=Math.Max(0,Math.Min(10080,Get(args,"stopMinutes",preferences.stopMinutes)));preferences.outputDevice=Get(args,"outputDevice",preferences.outputDevice);preferences.inputDevice=Get(args,"inputDevice",preferences.inputDevice);
-  if(preferences.microphone&&Recorder.GetSystemAudioCaptureDevices().Count==0)throw new Exception("没有检测到麦克风，关闭“我的声音”即可录制");
+  if(preferences.microphone&&Recorder.GetSystemAudioCaptureDevices().Count==0)throw new Exception("No microphone detected, disable ’My Voice’ to record");
   if(preferences.systemAudio&&Recorder.GetSystemAudioLoopbackDevices().Count==0)preferences.systemAudio=false;
-  Directory.CreateDirectory(preferences.folder);if(FreeBytes()<1024L*1024*1024)throw new Exception("保存位置剩余空间不足 1 GB，请更换文件夹");
+  Directory.CreateDirectory(preferences.folder);if(FreeBytes()<1024L*1024*1024)throw new Exception("Insufficient space remaining on save location 1 GB, Please change the folder");
   string probe=Path.Combine(preferences.folder,".write-test-"+Guid.NewGuid());using(File.Create(probe)){}File.Delete(probe);Save();
-  busy=true;paused=stopping=cancelled=false;error=null;file=Path.Combine(preferences.folder,"录屏_"+DateTime.Now.ToString("yyyyMMdd_HHmmss_fff")+".mp4");frames=lastFrames=0;previousStamp=-1;lateIntervals=0;longestInterval=0;callbackMetric=new RecorderMetric();clock.Reset();
+  busy=true;paused=stopping=cancelled=false;error=null;file=Path.Combine(preferences.folder,"Recorder_"+DateTime.Now.ToString("yyyyMMdd_HHmmss_fff")+".mp4");frames=lastFrames=0;previousStamp=-1;lateIntervals=0;longestInterval=0;callbackMetric=new RecorderMetric();clock.Reset();
   finish=new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);started=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
   try{
-   for(int i=preferences.countdown;i>0;i--){state="countdown";emit(new{state=state,remaining=i,busy=true});await Task.Delay(1000);if(closing||cancelled)throw new Exception("录制已取消");}
+   for(int i=preferences.countdown;i>0;i--){state="countdown";emit(new{state=state,remaining=i,busy=true});await Task.Delay(1000);if(closing||cancelled)throw new Exception("Recording has been canceled");}
    if(recorder!=null){recorder.Dispose();recorder=null;}
    var captureApi=Get(args,"captureApi","wgc")=="dda"?RecorderApi.DesktopDuplication:RecorderApi.WindowsGraphicsCapture;
-   if(mode!="window"&&!Recorder.GetDisplays().Any(d=>d.DeviceName==target.device))throw new Exception("当前显示设备暂不支持录制，请将区域放在实际显示器上重新框选。");
+   if(mode!="window"&&!Recorder.GetDisplays().Any(d=>d.DeviceName==target.device))throw new Exception("Current display device does not support recording, please place the area on a physical monitor and reselect.");
    RecordingSourceBase source=mode=="window"?(RecordingSourceBase)new WindowRecordingSource(new IntPtr(target.handle)){IsCursorCaptureEnabled=preferences.cursor}:new DisplayRecordingSource(target.device){RecorderApi=captureApi,IsCursorCaptureEnabled=preferences.cursor,IsBorderRequired=false};
    source.IsVideoFramePreviewEnabled=false;if(mode=="region")source.SourceRect=region;
    outputWidth=preset=="4k"?3840:preset=="1080"?1920:0;outputHeight=preset=="4k"?2160:preset=="1080"?1080:0;
@@ -103,20 +103,20 @@ sealed class NativeRecorderEngine : IDisposable {
    recorder.OnRecordingComplete+=(s,e)=>Complete(true,null);
    recorder.OnRecordingFailed+=(s,e)=>{started.TrySetException(new Exception(e.Error));Complete(false,e.Error);};
    SetWindowDisplayAffinity(owner.Handle,0);await Task.Run(()=>recorder.Record(file));
-   if(await Task.WhenAny(started.Task,Task.Delay(20000))!=started.Task)throw new Exception("录制启动超时，请重新打开目标窗口后重试");await started.Task;
-   if(!busy)throw new Exception(error??"录制未能开始");timer.Start();CreateControls(target);if(preferences.minimize&&!testing)owner.WindowState=FormWindowState.Minimized;
+   if(await Task.WhenAny(started.Task,Task.Delay(20000))!=started.Task)throw new Exception("Recording startup timeout, please reopen the target window and retry");await started.Task;
+   if(!busy)throw new Exception(error??"Recording failed to start");timer.Start();CreateControls(target);if(preferences.minimize&&!testing)owner.WindowState=FormWindowState.Minimized;
    EmitStatus();return Status();
-  }catch(Exception ex){if(recorder!=null){var abort=Task.Run(()=>recorder.Stop());try{await new RecorderFinalization(2000).Wait(abort,2000,"录制组件未及时退出");}catch{}}Complete(false,ex.Message);throw;}
+  }catch(Exception ex){if(recorder!=null){var abort=Task.Run(()=>recorder.Stop());try{await new RecorderFinalization(2000).Wait(abort,2000,"Recording component did not exit in time");}catch{}}Complete(false,ex.Message);throw;}
  }
  public object Status(){return new{busy=busy,state=state,paused=paused,seconds=Math.Round(clock.Elapsed.TotalSeconds,1),frames=frames,fps=preferences.fps,lateIntervals=lateIntervals,path=file,error=error,folder=preferences.folder,saveTimeoutMs=20000,recoveryFolder=state=="saving"||state=="failed"?Path.GetDirectoryName(file??data):null};}
  void EmitStatus(){emit(Status());}
- void Tick(){if(!busy)return;int rate=frames-lastFrames;lastFrames=frames;long size=0;try{size=new FileInfo(file).Length;}catch{}emit(new{busy=busy,state=state,paused=paused,seconds=Math.Round(clock.Elapsed.TotalSeconds,1),frames=frames,outputFps=rate,fps=preferences.fps,lateIntervals=lateIntervals,megabytes=Math.Round(size/1048576d,1),path=file});if(bar!=null&&!bar.IsDisposed)bar.UpdateState(clock.Elapsed,paused,stopping);if(tray!=null)tray.Text="小马播放器+录屏 · "+(paused?"已暂停 ":"正在录屏 ")+clock.Elapsed.ToString(@"hh\:mm\:ss");if(!stopping&&(FreeBytes()<512L*1024*1024||preferences.stopMinutes>0&&clock.Elapsed.TotalMinutes>=preferences.stopMinutes))StopFromControls();}
+ void Tick(){if(!busy)return;int rate=frames-lastFrames;lastFrames=frames;long size=0;try{size=new FileInfo(file).Length;}catch{}emit(new{busy=busy,state=state,paused=paused,seconds=Math.Round(clock.Elapsed.TotalSeconds,1),frames=frames,outputFps=rate,fps=preferences.fps,lateIntervals=lateIntervals,megabytes=Math.Round(size/1048576d,1),path=file});if(bar!=null&&!bar.IsDisposed)bar.UpdateState(clock.Elapsed,paused,stopping);if(tray!=null)tray.Text="Xiaoma Player + Recorder · "+(paused?"Paused ":"Recording in progress ")+clock.Elapsed.ToString(@"hh\:mm\:ss");if(!stopping&&(FreeBytes()<512L*1024*1024||preferences.stopMinutes>0&&clock.Elapsed.TotalMinutes>=preferences.stopMinutes))StopFromControls();}
  long FreeBytes(){try{return new DriveInfo(Path.GetPathRoot(Path.GetFullPath(preferences.folder))).AvailableFreeSpace;}catch{return long.MaxValue;}}
  public object Pause(){if(!busy||stopping)return Status();if(paused){previousStamp=-1;recorder.Resume();clock.Start();paused=false;state="recording";}else{recorder.Pause();clock.Stop();paused=true;state="paused";}EmitStatus();if(bar!=null)bar.UpdateState(clock.Elapsed,paused,false);return Status();}
  public async Task<object> Stop(){
-  if(finish==null)return Status();if(busy&&state=="countdown"){cancelled=true;Complete(false,"已取消录制");return await finish.Task;}
+  if(finish==null)return Status();if(busy&&state=="countdown"){cancelled=true;Complete(false,"Recording canceled");return await finish.Task;}
   if(busy&&!stopping){stopping=true;state="saving";clock.Stop();EmitStatus();if(bar!=null)bar.UpdateState(clock.Elapsed,paused,true);stopTask=Task.Run(()=>recorder.Stop());}
-  try{await new RecorderFinalization(20000).Wait(Task.WhenAll(stopTask??Task.CompletedTask,finish.Task),20000,"编码器没有及时结束，录制数据已保留。可以重新录制。");}
+  try{await new RecorderFinalization(20000).Wait(Task.WhenAll(stopTask??Task.CompletedTask,finish.Task),20000,"Encoder did not finish in time; recording data is retained. You can retry recording.");}
   catch(Exception ex){Complete(false,ex.Message);if(stopTask!=null)_ = stopTask.ContinueWith(t=>{var ignored=t.Exception;},TaskContinuationOptions.OnlyOnFaulted);}
   return await finish.Task;
  }
@@ -125,14 +125,14 @@ sealed class NativeRecorderEngine : IDisposable {
  void Complete(bool success,string message){
   lock(gate){if(!busy)return;busy=false;clock.Stop();error=message;state=success?"complete":"failed";}
   double avg=clock.Elapsed.TotalSeconds>0?frames/clock.Elapsed.TotalSeconds:0;
-  var report=new{success=success,path=file,error=message,width=outputWidth,height=outputHeight,frames=frames,targetFps=preferences.fps,activeSeconds=clock.Elapsed.TotalSeconds,averageOutputFps=Math.Round(avg,2),lateIntervals=lateIntervals,longestFrameIntervalMs=longestInterval,hardwareEncodingRequested=true,frameCallbackWorkMs=callbackMetric.Snapshot(),measurement="回调输出与墙钟时间统计。超预算间隔不是精确源画面掉帧数；文件帧率与场景刷新率需分别评估。"};
-  try{string reports=Path.Combine(preferences.folder,"录制报告");Directory.CreateDirectory(reports);File.WriteAllText(Path.Combine(reports,Path.GetFileName(file)+".json"),json.Serialize(report));}catch{}
+  var report=new{success=success,path=file,error=message,width=outputWidth,height=outputHeight,frames=frames,targetFps=preferences.fps,activeSeconds=clock.Elapsed.TotalSeconds,averageOutputFps=Math.Round(avg,2),lateIntervals=lateIntervals,longestFrameIntervalMs=longestInterval,hardwareEncodingRequested=true,frameCallbackWorkMs=callbackMetric.Snapshot(),measurement="Callback output compared with wall-clock timing. Budget interval is not exactly the frame drop count from source video; frame rate of file and scene refresh rate should be evaluated separately."};
+  try{string reports=Path.Combine(preferences.folder,"Recording reports");Directory.CreateDirectory(reports);File.WriteAllText(Path.Combine(reports,Path.GetFileName(file)+".json"),json.Serialize(report));}catch{}
   finish.TrySetResult(report);
   OnUi(()=>{timer.Stop();SetWindowDisplayAffinity(owner.Handle,0);if(bar!=null){bar.Dispose();bar=null;}if(tray!=null){tray.Dispose();tray=null;}EmitStatus();if(success&&!closing){owner.WindowState=FormWindowState.Normal;owner.Show();open(file);}else if(!closing){owner.WindowState=FormWindowState.Normal;owner.Show();}});
  }
  void CreateControls(RecorderSource target){if(testing||controllerControls)return;
   bar=new RecorderBar(()=>Pause(),()=>StopFromControls());var screen=target.device==null?Screen.FromControl(owner):Screen.AllScreens.FirstOrDefault(s=>s.DeviceName==target.device)??Screen.PrimaryScreen;bar.Location=new Point(screen.WorkingArea.Right-bar.Width-16,screen.WorkingArea.Top+16);bar.Show();
-  tray=new NotifyIcon{Icon=owner.Icon,Text="小马播放器+录屏 · 正在录屏",Visible=true};var menu=new ContextMenuStrip();menu.Items.Add("暂停 / 继续",null,(s,e)=>Pause());menu.Items.Add("结束并回看",null,(s,e)=>StopFromControls());menu.Items.Add("显示播放器",null,(s,e)=>{owner.WindowState=FormWindowState.Normal;owner.Show();owner.Activate();});tray.ContextMenuStrip=menu;tray.DoubleClick+=(s,e)=>{owner.WindowState=FormWindowState.Normal;owner.Show();owner.Activate();};
+  tray=new NotifyIcon{Icon=owner.Icon,Text="Xiaoma Player + Recorder · Recording in progress",Visible=true};var menu=new ContextMenuStrip();menu.Items.Add("Pause / Resume",null,(s,e)=>Pause());menu.Items.Add("End and review",null,(s,e)=>StopFromControls());menu.Items.Add("Playback Player",null,(s,e)=>{owner.WindowState=FormWindowState.Normal;owner.Show();owner.Activate();});tray.ContextMenuStrip=menu;tray.DoubleClick+=(s,e)=>{owner.WindowState=FormWindowState.Normal;owner.Show();owner.Activate();};
  }
  public void Dispose(){closing=true;timer.Stop();timer.Dispose();if(bar!=null)bar.Dispose();if(tray!=null)tray.Dispose();if(recorder!=null)recorder.Dispose();}
 }

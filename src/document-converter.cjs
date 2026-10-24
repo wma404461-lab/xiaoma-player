@@ -12,8 +12,8 @@ class DocumentConverter {
   convert(input,output){return new Promise((resolve,reject)=>{
     const helper=path.join(__dirname,'../build/OfficePreview.exe');
     execFile(helper,[input,output],{windowsHide:true,timeout:90000,maxBuffer:1024*1024,encoding:'utf8'},async(error,stdout)=>{
-      if(error){reject(new Error('文档预览暂不可用；请确认本机 Word、PowerPoint 或 Excel 能正常打开此文件。'));return;}
-      try{const result=JSON.parse(stdout.trim().split(/\r?\n/).at(-1));if(!result.Success)throw new Error(result.Error);await fs.access(output);resolve({url:this.urlFor(output)});}catch{reject(new Error('文档暂时无法转换为预览'));}
+      if(error){reject(new Error('Document preview is currently unavailable; please verify your device can open this file Word, PowerPoint or Excel Can normally open this file.'));return;}
+      try{const result=JSON.parse(stdout.trim().split(/\r?\n/).at(-1));if(!result.Success)throw new Error(result.Error);await fs.access(output);resolve({url:this.urlFor(output)});}catch{reject(new Error('Document temporarily cannot be converted to preview'));}
     });
   });}
 }

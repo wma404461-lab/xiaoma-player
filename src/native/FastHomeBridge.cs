@@ -20,7 +20,7 @@ partial class NativeMain {
  sealed class HomeOwner:IWin32Window{readonly IntPtr window;public HomeOwner(IntPtr value){window=value;}public IntPtr Handle{get{return window;}}}
  bool ValidFastHome(IntPtr window){
   if(window==IntPtr.Zero||!IsWindow(window))return false;var name=new StringBuilder(180);GetClassName(window,name,name.Capacity);if(!name.ToString().StartsWith("XiaomaFastHome-",StringComparison.Ordinal))return false;
-  uint pid;GetWindowThreadProcessId(window,out pid);try{string exe=Process.GetProcessById((int)pid).MainModule.FileName;return new[]{"小马播放器.exe","小马播放器+录屏.exe"}.Any(file=>String.Equals(exe,Path.Combine(root,file),StringComparison.OrdinalIgnoreCase));}catch{return false;}
+  uint pid;GetWindowThreadProcessId(window,out pid);try{string exe=Process.GetProcessById((int)pid).MainModule.FileName;return new[]{"Xiaoma Player.exe","Xiaoma Player + Recorder.exe"}.Any(file=>String.Equals(exe,Path.Combine(root,file),StringComparison.OrdinalIgnoreCase));}catch{return false;}
  }
  void ConfigureFastHome(string[] args){
   string flag=args.FirstOrDefault(a=>a.StartsWith("--home-window="));long value;if(flag!=null&&long.TryParse(flag.Substring(14),out value)){fastHomeWindow=new IntPtr(value);fastHomeDormant=true;}

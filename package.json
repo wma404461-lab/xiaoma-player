@@ -1,7 +1,7 @@
 {
   "name": "yiyan-viewer",
   "version": "0.6.23",
-  "description": "本地播放器与录屏工具",
+  "description": "Local player and recording tool",
   "main": "src/main.cjs",
   "private": true,
   "scripts": {
@@ -27,5 +27,5 @@
     "rcedit": "^5.0.2",
     "sharp": "^0.34.5"
   },
-  "productName": "小马播放器+录屏"
+  "productName": "Xiaoma Player + Recorder"
 }

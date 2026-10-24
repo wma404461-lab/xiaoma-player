@@ -14,6 +14,6 @@ partial class NativeMain {
  void ContentReady(){contentPending=false;WriteStartup("content-ready");ShowViewer();NativeEncoder.Warm(appRoot);}
  void DirectStartupError(Exception error){
   var panel=new Panel{Dock=DockStyle.Fill,BackColor=Color.FromArgb(12,13,15)};
-  var message=new Label{Dock=DockStyle.Fill,Text="文件暂时无法打开\n"+error.Message,ForeColor=Color.FromArgb(220,223,230),Font=new Font("Microsoft YaHei UI",14),TextAlign=ContentAlignment.MiddleCenter};panel.Controls.Add(message);Controls.Add(panel);panel.BringToFront();RevealDirectOpen();WriteStartup("direct-open-error");
+  var message=new Label{Dock=DockStyle.Fill,Text="File temporarily cannot be opened\n"+error.Message,ForeColor=Color.FromArgb(220,223,230),Font=new Font("Segoe UI",14),TextAlign=ContentAlignment.MiddleCenter};panel.Controls.Add(message);Controls.Add(panel);panel.BringToFront();RevealDirectOpen();WriteStartup("direct-open-error");
  }
 }

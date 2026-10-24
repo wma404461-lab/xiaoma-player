@@ -27,23 +27,23 @@ export class ModelView {
     if(['.glb','.gltf'].includes(item.extension)){const loader=new GLTFLoader(this.manager).setDRACOLoader(this.draco).setKTX2Loader(this.ktx).setMeshoptDecoder(MeshoptDecoder);const result=await loader.loadAsync(item.url);object=result.scene;clips=result.animations;}
     else if(item.extension==='.fbx'){object=await new FBXLoader(this.manager).loadAsync(item.url);clips=object.animations||[];}
     else if(item.extension==='.obj'){
-      const response=await fetch(item.url);if(!response.ok)throw new Error('模型读取失败');const text=await response.text();let loader=new OBJLoader(this.manager);const library=text.match(/^mtllib\s+(.+)$/m)?.[1]?.trim();
+      const response=await fetch(item.url);if(!response.ok)throw new Error('Model read failed');const text=await response.text();let loader=new OBJLoader(this.manager);const library=text.match(/^mtllib\s+(.+)$/m)?.[1]?.trim();
       if(library){try{const mtlResponse=await fetch(new URL(library.replace(/\\/g,'/'),base));if(mtlResponse.ok){const materials=new MTLLoader(this.manager).parse(await mtlResponse.text(),base);materials.preload();loader.setMaterials(materials);}}catch{}}
       object=loader.parse(text);
     }else if(item.extension==='.3mf')object=await new ThreeMFLoader(this.manager).loadAsync(item.url);
     else{
-      const loader=item.extension==='.stl'?new STLLoader(this.manager):new PLYLoader(this.manager);const geometry=await loader.loadAsync(item.url);if(!geometry.attributes.position?.count)throw new Error('模型内没有顶点');
+      const loader=item.extension==='.stl'?new STLLoader(this.manager):new PLYLoader(this.manager);const geometry=await loader.loadAsync(item.url);if(!geometry.attributes.position?.count)throw new Error('Model has no vertices');
       const colors=!!geometry.attributes.color;
       if(item.extension==='.ply'&&!geometry.index&&!geometry.attributes.normal)object=new THREE.Points(geometry,new THREE.PointsMaterial({color:colors?0xffffff:0xb3c6da,vertexColors:colors,size:.02,sizeAttenuation:true}));
       else{if(!geometry.attributes.normal)geometry.computeVertexNormals();object=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:colors?0xffffff:0xaabccf,vertexColors:colors,metalness:.05,roughness:.5,side:THREE.DoubleSide}));}
     }
     if(this.disposed){this.disposeObject(object);return null;}
-    this.object=object;const box=new THREE.Box3().setFromObject(object);if(box.isEmpty())throw new Error('模型内没有可显示的几何体');const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());object.position.sub(center);this.radius=Math.hypot(size.x,size.y,size.z)/2||1;this.scene.add(object);
+    this.object=object;const box=new THREE.Box3().setFromObject(object);if(box.isEmpty())throw new Error('Model has no visible geometry');const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());object.position.sub(center);this.radius=Math.hypot(size.x,size.y,size.z)/2||1;this.scene.add(object);
     let requiresEnvironment=false;object.traverse(node=>{for(const material of node.material?(Array.isArray(node.material)?node.material:[node.material]):[])if(material.isMeshStandardMaterial&&(material.metalness>.1||material.map))requiresEnvironment=true;});
     if(requiresEnvironment){const pmrem=new THREE.PMREMGenerator(this.renderer);const room=new RoomEnvironment();this.environment=pmrem.fromScene(room,.04);this.scene.environment=this.environment.texture;room.dispose();pmrem.dispose();}
     this.grid=new THREE.GridHelper(this.radius*4,20,0x526074,0x343d49);this.grid.position.y=-size.y/2-.001;this.grid.material.transparent=true;this.grid.material.opacity=.28;this.scene.add(this.grid);
     let vertices=0,triangles=0;object.traverse(node=>{if(node.geometry?.attributes.position){vertices+=node.geometry.attributes.position.count;triangles+=Math.floor((node.geometry.index?.count||node.geometry.attributes.position.count)/3);if(node.isPoints)node.material.size=this.radius*.006;}if(node.material){for(const material of Array.isArray(node.material)?node.material:[node.material])if(material?.isMeshBasicMaterial&&!material.map)material.color.set(0xacbdce);}});
-    if(vertices>150000)this.renderer.setPixelRatio(1);this.clips=clips;if(clips.length){this.mixer=new THREE.AnimationMixer(object);this.mixer.addEventListener('finished',()=>{this.playing=false;this.onEnded?.();});this.selectAnimation(0);}this.fit();return {vertices,triangles,animations:clips.map((clip,i)=>({name:clip.name||'动画 '+(i+1),duration:clip.duration}))};
+    if(vertices>150000)this.renderer.setPixelRatio(1);this.clips=clips;if(clips.length){this.mixer=new THREE.AnimationMixer(object);this.mixer.addEventListener('finished',()=>{this.playing=false;this.onEnded?.();});this.selectAnimation(0);}this.fit();return {vertices,triangles,animations:clips.map((clip,i)=>({name:clip.name||'Animation '+(i+1),duration:clip.duration}))};
   }
   selectAnimation(index){if(!this.mixer)return;this.mixer.stopAllAction();this.action=this.mixer.clipAction(this.clips[index]);this.action.play();this.mixer.setTime(0);this.activeClip=index;this.requestRender();}
   seek(time){if(this.action){this.action.paused=false;this.action.enabled=true;this.action.play();}this.mixer?.setTime(time);this.requestRender();}
