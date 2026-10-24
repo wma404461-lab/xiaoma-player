@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 64 64" data-mark="xiaoma-media-horse-v4" data-variant="primary">
+  <title>小马播放器＋录屏 · 白马与播放</title>
+  <defs>
+    <linearGradient id="tile" x1="9" y1="3" x2="54" y2="61" gradientUnits="userSpaceOnUse"><stop stop-color="#539CFB"/><stop offset=".5" stop-color="#3975EE"/><stop offset="1" stop-color="#3A49D4"/></linearGradient>
+    <linearGradient id="horse" x1="27" y1="12" x2="32" y2="52" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF"/><stop offset=".58" stop-color="#FAFCFF"/><stop offset="1" stop-color="#DEE9FC"/></linearGradient>
+    <linearGradient id="mane" x1="23" y1="17" x2="20" y2="52" gradientUnits="userSpaceOnUse"><stop stop-color="#C8DDF9"/><stop offset="1" stop-color="#A3BFEF"/></linearGradient>
+    <linearGradient id="play" x1="45" y1="36" x2="54" y2="55" gradientUnits="userSpaceOnUse"><stop stop-color="#7DF0E6"/><stop offset="1" stop-color="#25C0DF"/></linearGradient>
+    <linearGradient id="glass" x1="28" y1="3" x2="28" y2="35" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFFFF" stop-opacity=".18"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+  </defs>
+  <g id="tile-emblem">
+    <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#tile)"/>
+    <rect id="tile-edge" x="2.5" y="2.5" width="59" height="59" rx="13.5" fill="none" stroke="#FFFFFF" stroke-opacity=".18"/>
+  </g>
+  <g id="horse-emblem">
+    <path d="M15 52C15.8 44.7 18.7 37.4 23.8 32.8C17.7 31.7 16.8 25.1 21.1 20.6L24.8 17.1 25.6 10.9 30.9 15.8C34.5 15.9 38 17.9 39.6 21.2L46.9 25.5C49.3 26.9 49.1 29.5 46.8 31.1L42.8 34.1C40.6 35.4 38.5 34.5 36.5 32.8L32.8 30.9C30.9 35.5 30.6 39.8 34.1 44.4L39 52Z" fill="#FFFFFF"/>
+    <path id="horse-mane" d="M25.6 10.9 24.8 17.1 21.1 20.6C16.8 25.1 17.7 31.7 23.8 32.8C18.7 37.4 15.8 44.7 15 52H21C21.7 43.6 24.1 37.4 28.2 31.5C22.6 29.3 22.6 24.4 27.8 20.7L30.9 15.8Z" fill="#BED4F6"/>
+    <circle id="horse-eye" cx="36.1" cy="23.6" r="1.5" fill="#2D477B"/>
+  </g>
+  <g id="play-emblem">
+    <circle cx="49" cy="48" r="11" fill="#17307A" opacity=".2"/>
+    <circle cx="49" cy="46.5" r="10.5" fill="url(#play)" stroke="#C5FFFA" stroke-opacity=".7" stroke-width=".8"/>
+    <path d="M46.8 41.7C46.8 41.1 47.2 40.9 47.7 41.2L54.5 45.7C55 46 55 46.8 54.5 47.1L47.7 51.6C47.2 51.9 46.8 51.6 46.8 51Z" fill="#FFFFFF"/>
+  </g>
+  <g id="record-emblem"><circle cx="53" cy="13" r="3.7" fill="#FF786F" stroke="#FFD2CC" stroke-width=".8"/></g>
+</svg>

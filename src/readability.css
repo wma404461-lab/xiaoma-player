@@ -1,0 +1,38 @@
+/* Legible at normal DPI; WebView2 scales these CSS pixels with the display. */
+.topbar {min-height:66px;height:66px}
+.brand {font-size:16px}
+.file-name {font-size:14px;color:#d8dce4}
+.top-actions>button {min-height:40px}
+.top-actions .icon {width:20px;height:20px}
+.controls {font-size:14px;padding:12px 18px;gap:12px}
+.controls .small-button,.controls select,.controls #export-size,.controls .view-actions #fit,.controls #actual-size,.controls #wireframe {font-size:14px;min-height:38px;padding:8px 12px;max-width:none;color:#ccd1db}
+.controls .icon-button {width:40px;height:40px}
+.controls .icon {width:20px;height:20px}
+.controls .play-button {width:42px;height:42px}
+.controls .time {font-size:13px;min-width:94px;color:#b7becb}
+.controls .details,.controls .document-controls,.controls .range-controls {font-size:13px;color:#b7becb}
+.controls .audio #volume {width:88px;min-width:64px;height:22px}
+.controls .audio #volume-level {font-size:13px;min-width:39px;color:#b7becb}
+.controls .progress-wrap {height:30px}
+.controls .progress-wrap input {height:30px}
+.controls .progress-wrap canvas {top:13px}
+.controls .progress-wrap input::-webkit-slider-thumb {width:12px;height:12px;margin-top:-4.5px}
+.controls .transport-row {gap:10px}
+.controls .playback-tools {gap:6px}
+.controls .repeat-mode[aria-pressed=true] {color:#f0f3f9;background:#3c4657;box-shadow:inset 0 0 0 1px #8b99ad44}
+.controls .view-actions {height:auto;align-items:center;flex-wrap:wrap;gap:4px}
+#reveal-video {font-size:15px;font-weight:600;min-height:40px;padding:9px 15px;border-radius:7px;background:#e1e7f0;color:#172131;gap:8px}
+#reveal-video:hover {background:#f2f5fa;color:#0d1726}
+#rec-done-path {font-size:14px;font-weight:600;min-height:38px;padding:8px 14px;background:#e1e7f0;color:#172131;border-radius:7px}
+#reveal-video:disabled {opacity:.7;cursor:wait}
+#record-screen {font-size:15px!important;font-weight:600;min-width:108px;min-height:42px;padding:9px 16px;background:#702e3c;color:#ffe7ee;border:1px solid #cc728777;border-radius:7px;gap:9px}
+#record-screen::before {content:'';display:inline-block;width:9px;height:9px;background:#ff9bb0;border-radius:50%;flex:none}
+#record-screen:hover {background:#8b3b4d;color:#fff}
+#record-screen.recording {background:#a74555;color:#fff}
+.statusbar {min-height:32px;height:32px;font-size:12px;color:#9da6b5}
+.statusbar .update-link,.statusbar .strip-toggle {font-size:12px}
+.gesture-hint {font-size:12px}
+@media(max-width:1000px){.controls {grid-template-columns:minmax(0,1fr)}.controls .motion-controls,.controls .view-actions {grid-column:1/-1}.controls .view-actions {justify-self:end}}
+@media(max-width:760px){.top-actions>button {width:38px;padding:8px}.top-actions #record-screen {font-size:14px!important;width:auto;min-width:95px}.controls {padding:10px}.controls .small-button,.controls select {padding:8px 9px}}
+
+.title-drag-space{flex:1;align-self:stretch;min-width:24px}.topbar,.topbar .brand,.title-drag-space{user-select:none;cursor:default}.stage,.stage.checker,.stage.light,.fullscreen .stage{background:#000!important;background-image:none!important}#file-name{display:none!important}

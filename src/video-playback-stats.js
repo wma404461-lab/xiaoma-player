@@ -1,0 +1,5 @@
+export class VideoPlaybackStats {
+ constructor(video){this.video=video;this.samples=[];this.waiting=false;for(const name of ['emptied','seeking','ratechange','playing'])video.addEventListener(name,()=>{this.samples=[];this.waiting=false;});video.addEventListener('waiting',()=>this.waiting=true);video.addEventListener('pause',()=>this.waiting=false);}
+ sample(now,metadata){if(this.video.paused||this.video.seeking)return;this.waiting=false;if(metadata.mediaTime<(this.samples.at(-1)?.media??0))this.samples=[];this.samples.push({wall:now,media:metadata.mediaTime,frames:metadata.presentedFrames});while(this.samples.length>2&&this.samples[0].wall<now-1200)this.samples.shift();}
+ read(){const first=this.samples[0],last=this.samples.at(-1),elapsed=first&&last?(last.wall-first.wall)/1000:0,quality=this.video.getVideoPlaybackQuality?.();return {requested:this.video.playbackRate,speed:elapsed>=.35?(last.media-first.media)/elapsed:null,fps:elapsed>=.35?(last.frames-first.frames)/elapsed:null,dropped:quality?.droppedVideoFrames??null,total:quality?.totalVideoFrames??null,waiting:this.waiting};}
+}

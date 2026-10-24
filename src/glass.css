@@ -1,0 +1,155 @@
+/* Quiet glass: stable geometry, legible type, and no live blur over media. */
+:root {
+ --bg:#0e1520;--panel:#172231;--stage:#000;--border:#ffffff14;
+ --ink:#edf3fb;--muted:#b0bed0;--accent:#b3d3ff;--accent-bg:#abcfff18;
+ --glass-button:linear-gradient(180deg,#ffffff09,#ffffff04);
+ --glass-shadow:inset 0 1px #ffffff09;
+ --glass-ease:cubic-bezier(.2,.7,.2,1);
+ color-scheme:dark;
+}
+body {background:var(--bg);font-family:'Segoe UI','Microsoft YaHei UI',sans-serif;font-size:14px;line-height:1.5}
+/* Secondary controls stay quiet. Only the primary action carries blue glass. */
+button:not(.file-item):not(.clip-handle) {
+ isolation:isolate;border:1px solid transparent;border-radius:9999px!important;
+ background:var(--glass-button);color:var(--ink);box-shadow:var(--glass-shadow);
+ transition:background-color 120ms ease,color 120ms ease,opacity 120ms ease,scale 120ms var(--glass-ease);
+}
+:where(button:not(.file-item):not(.clip-handle)){position:relative}
+button:not(.file-item):not(.clip-handle):not(:disabled):hover {background-color:#ffffff12;color:#fff}
+button:not(.file-item):not(.clip-handle):not(:disabled):active {scale:.98;background-color:#ffffff1c}
+button:not(.file-item):not(.clip-handle):is(.active,[aria-pressed="true"]) {
+ background:#accfff20;border-color:#b5d6ff35;color:#d6e7ff;box-shadow:none;
+}
+button:not(.file-item):not(.clip-handle):is(.primary,.play-button),#open-files,#rec-start,#rec-next,.clip-actions .clip-save,.rec-actions .primary {
+ background:linear-gradient(180deg,#405d7c,#334d69);border-color:#a2c7ef42;color:#f5f9ff;box-shadow:inset 0 1px #ffffff18;
+}
+button:not(.file-item):not(.clip-handle):disabled {opacity:.42;cursor:default;scale:1}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible {outline:2px solid #b3d3ff;outline-offset:3px}
+.topbar,.controls,.playlist-pane,.statusbar {background:linear-gradient(180deg,#1c2a3a,#162130);border-color:var(--border);backdrop-filter:none;box-shadow:none}
+.topbar {height:68px;min-height:68px;padding-inline:20px;gap:12px}
+.brand {font-size:16px;color:var(--ink);font-weight:600;white-space:nowrap;border:0;padding-right:0}
+.brand-logo {width:25px;height:25px}
+.title-drag-space {min-width:8px}
+.top-actions {gap:8px;flex-shrink:0}
+.top-actions>button {min-height:40px;font-size:14px;padding:8px 13px}
+.top-actions .icon-button {width:40px;padding:9px}
+.top-actions .divider {height:20px;background:#ffffff16;margin-inline:2px}
+#record-screen {font-size:14px!important;font-weight:600;min-width:88px;min-height:40px;padding:8px 14px;background:linear-gradient(#a62f43,#842332);color:#fff6f8;border-color:#ffb0c05c;box-shadow:0 0 0 1px #fa728320,inset 0 1px #ffffff20}
+#record-screen::before {width:10px;height:10px;background:#ffd5df;box-shadow:0 0 0 3px #ff9ca72b,0 0 12px #ff879966}
+#record-screen.recording {background:linear-gradient(#bc3850,#992b40);color:#fff;border-color:#ffc1cf99}
+#record-screen.recording::before {background:#fff2f5;animation:record-breathe 1.8s ease-in-out infinite}
+#record-screen:hover,#rec-start:hover {box-shadow:0 0 0 2px #ff9eb64d,0 0 20px #f15d7433,inset 0 1px #ffffff30}
+#rec-start {background:linear-gradient(#a62f43,#842332);border-color:#ffb0c05c;color:#fff6f8;position:relative;overflow:hidden}
+#rec-start::before {content:'';width:10px;height:10px;flex:none;border-radius:50%;background:#ffd5df;box-shadow:0 0 0 3px #ff9ca72b}
+.recorder-dialog[data-recorder-state=recording] #rec-start::before,.recorder-dialog[data-recorder-state=paused] #rec-start::before {border-radius:2px}
+.rec-light {width:10px;height:10px;background:#ff5975;box-shadow:0 0 0 4px #ff597526,0 0 14px #ff59754d;animation:record-breathe 1.8s ease-in-out infinite}
+.recorder-dialog[data-recorder-state=paused] .rec-light {background:#ffc15b;box-shadow:0 0 0 4px #ffc15b26;animation:none}
+.recorder-dialog[data-recorder-state=saving] .rec-light,.recorder-dialog[data-recorder-state=preparing] .rec-light {background:#8ec7ff;box-shadow:0 0 0 4px #8ec7ff26;animation:none}
+@keyframes record-breathe {0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes action-attention {0%,100%{box-shadow:0 0 0 1px #b3d3ff26}50%{box-shadow:0 0 0 2px #b3d3ff66,0 0 18px #91c4ff26}}
+@keyframes action-shine {0%,55%{translate:-180% 0;opacity:0}65%{opacity:1}100%{translate:300% 0;opacity:0}}
+.recorder-dialog:not([data-recorder-state=recording]):not([data-recorder-state=paused]):not([data-recorder-state=saving]):not([data-recorder-state=preparing]) #rec-region {animation:action-attention 2.6s ease-in-out 3}
+#rec-start:not(:disabled)::after {content:'';position:absolute;inset:0;width:35%;background:linear-gradient(100deg,transparent,#ffffff1f,transparent);pointer-events:none;animation:action-shine 3.4s ease-in-out 2}
+.rec-done-toast:not([hidden]) :is(#rec-done-path,#rec-edit) {animation:action-attention 2.2s ease-in-out 2}
+.rec-done-toast :is(#rec-done-path,#rec-edit):hover,#rec-region:hover {border-color:#c9e2ff80;box-shadow:0 0 0 2px #accfff26}
+.file-name,.brand,.empty-state h1 {color:var(--ink)}
+.empty-state h1 {font-size:30px;font-weight:500;line-height:1.35;letter-spacing:.3px}
+.empty-state p {font-size:15px;line-height:1.8;color:var(--muted);margin-top:10px}
+.type-hints {font-size:13px;gap:14px 22px;color:var(--muted);margin-block:26px}
+.drop-illustration {color:#a1b8d1;opacity:.8}
+.empty-state .primary {min-height:44px;padding:10px 24px;font-size:15px}
+.stage:has(.empty-state:not([hidden])),.stage:has(.audio-view:not([hidden])) {background:#0e1520!important}
+.stage {background:#000}.stage.light{background:#e2e4e7}
+.controls {padding:12px 20px;gap:10px;font-size:14px}
+.controls .transport-row {gap:12px}
+.playback-core,.playback-tools,.sequence-tools,.view-actions {gap:6px}
+.controls .icon-button {width:40px;height:40px}
+.controls .play-button {width:44px;height:44px}
+.controls .small-button,.controls select,.controls #export-size,.controls .view-actions #fit,.controls #actual-size,.controls #wireframe {
+ font-size:14px;min-height:40px;padding:8px 13px;color:var(--ink);
+}
+.controls .time {font-size:13px;font-weight:500;min-width:100px;color:#c3d0e1;font-variant-numeric:tabular-nums}
+.controls .details,.controls .document-controls,.controls .range-controls {font-size:13px;color:var(--muted)}
+.controls .progress-wrap,.controls .progress-wrap input {height:32px}
+.controls .progress-wrap canvas {top:14px}
+.controls .progress-wrap input::-webkit-slider-thumb {width:14px;height:14px;margin-top:-5.5px}
+.controls input[type=range],.audio #volume {accent-color:#b3d3ff}
+.controls .repeat-mode[aria-pressed=true] {background:#accfff20;border-color:#b5d6ff35;color:#d6e7ff;box-shadow:none}
+.controls .audio #volume-level {font-size:13px;color:var(--muted)}
+.controls .view-actions {gap:6px;border:0;padding-left:0}
+#reveal-video {font-size:14px;font-weight:400;min-height:40px;padding:8px 14px;background:var(--glass-button);color:var(--ink)}
+.playlist-pane {border-left:1px solid var(--border)}
+.playlist-header {height:48px;min-height:48px;font-size:13px;color:var(--muted);padding-inline:8px;gap:6px;white-space:nowrap}
+.playlist-header>span:first-child {flex-shrink:0}
+.playlist-header #list-count {font-size:12px;color:var(--muted)}
+.playlist-header button {width:32px;height:32px}
+.file-item {border-radius:10px;background:#ffffff03;border:1px solid transparent;transition:background-color 120ms ease,border-color 120ms ease}
+.file-item:hover {background:#ffffff0a;border-color:#ffffff1c}
+.file-item.selected {background:#aacfff16;border-color:#aaccff60;box-shadow:none}
+.file-item .file-thumb {background:#000}.file-item .file-text strong{font-size:14px}.file-item .file-text small{font-size:12px;color:var(--muted)}
+select,input:not([type=range]):not([type=checkbox]):not([type=radio]),.controls select,.controls #export-size,.document-controls input,.range-controls input,.recorder-dialog select,.rec-options input {
+ border:1px solid #ffffff26;border-radius:10px;background:#111b29;color:var(--ink);box-shadow:none;
+}
+select option {background:#172231;color:var(--ink)}
+.image-navigation button {background:#1d2b3ce8;color:var(--ink);opacity:.78;box-shadow:none;border-color:#ffffff24}
+.image-navigation button:hover {opacity:1}
+.loading,.frame-counter,.media-information,.stage-badge,.export-toast,.rec-done-toast,.album-art {
+ background:#192536f2;border:1px solid #ffffff20;border-radius:12px;box-shadow:0 8px 24px #0003;backdrop-filter:none;color:#dce7f5;
+}
+.frame-counter,.media-information,.stage-badge {font-size:13px}
+.album-art {border-radius:24px}.album-art>.icon {color:#b6d6ff}.audio-view h2 {color:var(--ink)}.audio-view>span{font-size:14px;color:var(--muted)}
+.update-dialog,.recorder-dialog {
+ background:linear-gradient(145deg,#233348,#172231 65%);color:var(--ink);border:1px solid #ffffff29;border-radius:20px;
+ box-shadow:0 24px 70px #0006;backdrop-filter:none;animation:dialog-in 160ms var(--glass-ease);box-sizing:border-box;
+}
+.update-dialog::backdrop,.recorder-dialog::backdrop {background:#03091299;backdrop-filter:none}
+.update-dialog,.recorder-dialog {scrollbar-width:thin;scrollbar-color:#71859f transparent}
+.update-dialog::-webkit-scrollbar,.recorder-dialog::-webkit-scrollbar {width:6px}
+.update-dialog::-webkit-scrollbar-track,.recorder-dialog::-webkit-scrollbar-track {background:transparent}
+.update-dialog::-webkit-scrollbar-thumb,.recorder-dialog::-webkit-scrollbar-thumb {background:#71859f80;border-radius:9999px}
+.update-dialog::-webkit-scrollbar-button,.recorder-dialog::-webkit-scrollbar-button {display:none;height:0}
+@keyframes dialog-in {from {opacity:0;transform:translateY(6px)}to {opacity:1;transform:translateY(0)}}
+.update-dialog {width:min(440px,calc(100vw - 40px));padding:30px;max-height:calc(100dvh - 40px);overflow:auto}
+.update-dialog h2 {font-size:23px;font-weight:500;line-height:1.5}.update-dialog p{font-size:14px;line-height:1.7}
+.update-dialog #update-version,.update-dialog #update-hint,.update-dialog #update-notes {font-size:13px;line-height:1.7;color:var(--muted)}
+.update-dialog .primary,.update-dialog #retry-update {min-height:44px;padding:10px 18px;font-size:14px}
+.update-dialog .update-close {width:36px;height:36px;display:grid;place-items:center;line-height:1;padding:0}
+.recorder-dialog {width:min(500px,calc(100vw - 40px));padding:28px}
+.recorder-dialog header {margin-bottom:24px}.recorder-dialog h2 {font-size:25px;font-weight:500;margin:0 0 6px}
+.recorder-dialog #rec-close {width:36px;height:36px;padding:0;margin:-4px -4px 0 0;color:var(--muted)}
+.rec-eyebrow,.recorder-dialog small,.rec-note,.rec-shortcut {font-size:13px;line-height:1.7;color:var(--muted)}
+.rec-save-top {padding-bottom:20px;margin-bottom:20px}.rec-save-top>label {font-size:13px;color:var(--muted);margin-bottom:10px}
+.rec-folder {gap:6px}.rec-folder span{font-size:13px;color:#ced8e7}.rec-folder button{font-size:13px;padding:7px 12px;min-height:36px}
+.rec-area-card {padding:18px;border-radius:12px;border-color:#ffffff14;background:#0d182633;gap:10px}
+.rec-area-card #rec-area-label {font-size:13px;color:var(--muted)}
+.rec-area-card #rec-region {font-size:15px;min-height:48px;padding:12px 18px;background:#ffffff07;border-color:#ffffff26;color:var(--ink)}
+#rec-region .icon {color:#c7d9ee}
+.rec-sound {margin:20px 0;gap:24px}.rec-sound label,.rec-checks label {font-size:14px;min-height:32px;color:#d4dfed;gap:10px}
+.recorder-dialog input[type=checkbox] {accent-color:#b3d3ff;width:17px;height:17px}
+.recorder-dialog details {margin-top:18px;padding-top:12px}.recorder-dialog summary {min-height:36px;font-size:14px;color:#d4dfed}
+.recorder-dialog summary::before {color:var(--muted)}.recorder-dialog summary span {font-size:12px;color:var(--muted)}
+.rec-options {gap:18px 16px;margin:20px 0}.rec-options label {font-size:13px;color:var(--muted)}
+.recorder-dialog select,.rec-options input {font-size:14px;min-height:40px;padding:9px 10px}
+.rec-primary {font-size:15px;min-height:46px;margin-top:20px;padding:12px 18px;font-weight:500}
+.rec-shortcut {font-size:12px;margin-top:14px}.rec-note {margin-top:0}
+#rec-message {font-size:14px;color:#f3bdc7}#rec-live-message,#rec-pause {font-size:14px}
+.rec-done-toast {font-size:14px}.rec-done-body strong,.rec-done-toast #rec-done-path,.rec-done-toast #rec-edit {font-size:14px}
+.clip-instruction strong,.clip-instruction span,#clip-message {font-size:13px;line-height:1.6;color:var(--muted)}
+.clip-actions>button {font-size:14px;min-height:40px;padding:8px 14px}
+.clip-track .clip-handle {background:#b8cee9;color:#172231;box-shadow:none;transition:none}
+.clip-track .clip-handle:hover {background:#d4e4fa}.clip-handle i{background:#3b526e}.clip-selection{border-color:#b8cee9}
+.statusbar {height:36px;min-height:36px;font-size:12px;color:var(--muted);padding-inline:16px}
+.statusbar .update-link,.statusbar .strip-toggle {font-size:12px;min-height:28px;padding:3px 9px;background:transparent;box-shadow:none;color:var(--muted)}
+.gesture-hint,.file-nav {font-size:12px;color:var(--muted)}
+.fullscreen .controls {background:#162130f5;border-radius:16px 16px 0 0;transition:opacity 160ms ease}
+@media(max-width:1000px){.controls{padding:12px 16px}.brand{font-size:15px}.topbar{padding-inline:16px;gap:8px}.top-actions{gap:5px}.playlist-header>span:first-child{display:none}}
+@media(max-width:760px){
+ .topbar{padding-inline:12px}.top-actions{gap:4px}.top-actions>button{width:38px;padding:8px;font-size:0}
+ .top-actions #record-screen{width:auto;min-width:78px;font-size:14px!important;padding:8px 11px}
+ .top-actions .icon-button{width:38px}.title-drag-space{min-width:4px}
+ .controls{padding:10px 12px}.controls .small-button,.controls select{padding:8px 11px}
+ .empty-state h1{font-size:26px}.empty-state p{font-size:14px}.type-hints{gap:12px 18px}
+ .recorder-dialog{padding:24px}.rec-options{gap:16px 12px}.rec-shortcut{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}button:not(.file-item):not(.clip-handle):active{scale:1}}
+@media(forced-colors:active){button:not(.file-item):not(.clip-handle){background:ButtonFace;color:ButtonText;border:1px solid ButtonText;box-shadow:none}.topbar,.controls,.playlist-pane,.statusbar,.update-dialog,.recorder-dialog{background:Canvas;color:CanvasText}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline-color:Highlight}}

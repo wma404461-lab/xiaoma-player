@@ -1,0 +1,6 @@
+const $=id=>document.getElementById(id);
+export class VolumeControl {
+ constructor(media){this.media=media;const saved=localStorage.getItem('player-volume'),value=saved===null?.7:Math.max(0,Math.min(1,Number(saved)||0)),muted=localStorage.getItem('player-muted')==='true';for(const element of media){element.volume=value;element.muted=muted;element.addEventListener('volumechange',()=>this.refresh(element));}$('volume').value=value;$('volume').oninput=()=>this.set(Number($('volume').value));$('mute').onclick=()=>{const next=!media[0].muted;for(const element of media)element.muted=next;localStorage.setItem('player-muted',String(next));this.refresh(media[0]);};this.refresh(media[0]);}
+ set(value){value=Math.max(0,Math.min(1,value));for(const element of this.media){element.volume=value;element.muted=false;}localStorage.setItem('player-volume',String(value));localStorage.setItem('player-muted','false');this.refresh(this.media[0]);}
+ refresh(element){$('volume').value=element.volume;$('volume-level').textContent=element.muted?'静音':Math.round(element.volume*100)+'%';$('mute').classList.toggle('active',element.muted);$('mute').setAttribute('aria-pressed',String(element.muted));$('mute').title=element.muted?'取消静音':'静音';}
+}

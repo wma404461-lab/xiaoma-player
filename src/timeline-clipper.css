@@ -1,0 +1,35 @@
+.controls.clip-editing .progress-wrap {height:66px;margin:5px 10px;overflow:visible}
+.controls.clip-editing #timeline,.controls.clip-editing #cache-track {display:none}
+.controls.clip-editing .seek-row {flex-direction:column;align-items:stretch;gap:4px}
+.controls.clip-editing .progress-wrap {flex:none;width:calc(100% - 20px)}
+.controls.clip-editing .motion-controls,.controls.clip-editing .clip-actions {grid-column:1/-1}
+.controls.clip-editing .view-actions {display:none}
+.controls.clip-editing #range-toggle,.controls.clip-editing #range-controls {display:none!important}
+.sequence-tools:has(#trim-video:not([hidden])) {display:flex}
+.clip-track {position:relative;width:100%;height:62px;border-radius:4px;touch-action:none;background:#1b1d23;cursor:crosshair;isolation:isolate}
+.clip-track[hidden],.clip-actions[hidden] {display:none!important}
+.clip-filmstrip {position:absolute;inset:0;display:flex;overflow:hidden;border-radius:4px;pointer-events:none}
+.controls.clip-editing .clip-filmstrip canvas {position:static;inset:auto;height:100%;flex:1;min-width:0;width:12.5%;object-fit:cover;border-right:1px solid #ffffff09;border-radius:0;opacity:1}
+.clip-selection {position:absolute;top:0;bottom:0;border:2px solid #d9dce2;box-sizing:border-box;pointer-events:none;z-index:2}
+.clip-mask {position:absolute;top:0;bottom:0;background:#090a0dcc;pointer-events:none;z-index:1}
+.clip-mask-left {left:0}
+.clip-mask-right {right:0}
+.clip-track .clip-handle {position:absolute;top:0;bottom:0;width:20px;min-width:20px;height:62px;padding:0;border:0;border-radius:4px;background:#dedfe4;transform:translateX(-50%);z-index:5;cursor:ew-resize;touch-action:none;display:flex;align-items:center;justify-content:center;color:#191b20}
+.clip-track .clip-handle:hover {background:#f1f2f4}
+.clip-handle i {width:2px;height:21px;display:block;border-radius:2px;background:#737985}
+.clip-handle:focus-visible {outline:1px solid #b1b6c0;outline-offset:3px}
+.clip-playhead {position:absolute;top:-6px;bottom:-6px;width:2px;background:#d9dce2;z-index:4;pointer-events:none}
+.clip-playhead:before {content:'';position:absolute;top:0;left:-3px;width:8px;height:4px;border-radius:1px;background:#d9dce2}
+.clip-actions {display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:5px 4px 1px}
+.clip-instruction {display:flex;flex-direction:column;gap:5px;margin-right:auto}
+.clip-instruction strong {font-weight:400;font-size:10px;color:var(--muted)}
+.clip-instruction span {font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums;color:#afb4be}
+.clip-actions>button {font-size:11px;padding:8px 12px}
+.clip-actions .clip-save {background:#e0e2e6;color:#191b20;border:0;border-radius:6px;font-weight:500;padding:8px 15px}
+.clip-actions .clip-save:hover {background:#f2f3f5;color:#08090b}
+#clip-message {font-size:11px;color:var(--muted)}
+@media(max-width:760px) {
+ .clip-actions {gap:6px}
+ .clip-actions>button {padding:8px 10px}
+ .clip-track .clip-handle {width:24px;min-width:24px}
+}

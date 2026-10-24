@@ -1,0 +1,175 @@
+:root {
+  --bg: #111214;
+  --panel: #151619;
+  --stage: #0c0d0f;
+  --border: #ffffff0c;
+  --ink: #e7e8ec;
+  --muted: #7c8089;
+  --accent: #cdd0d7;
+  --accent-bg: #ffffff0b;
+  --orange: #bea182;
+  font-size: 13px;
+  font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+body {background: var(--bg)}
+button {border-radius: 6px; color: #a5a9b2; transition: background-color .1s, color .1s}
+button:hover {background: #ffffff08; color: #f1f2f4}
+button:active {background: #ffffff10}
+button.active,button[aria-pressed="true"] {background: #ffffff0b; color: #e7e8ec}
+button:disabled {opacity: .3}
+button:focus-visible,input:focus-visible,select:focus-visible {outline: 1px solid #8f949f; outline-offset: 3px}
+.icon {width: 17px; height: 17px; stroke-width: 1.5}
+.icon-button {width: 32px; height: 32px; padding: 7px}
+.topbar {height: 54px; min-height: 54px; padding: 0 18px; gap: 18px; background: var(--panel); border-color: var(--border)}
+.brand {gap: 9px; font-size: 13px; font-weight: 500; letter-spacing: .1px; padding-right: 18px; border-right: 1px solid #ffffff09}
+.brand-logo {width: 21px; height: 21px}
+.file-name {text-align: left; padding: 6px 0; font-size: 12px; color: #858993; font-weight: 400}
+.top-actions {gap: 3px}
+.top-actions>button {font-size: 11px; color: #8d929c; padding: 7px 9px}
+.top-actions>button:hover {color: #f1f2f4}
+.divider {background: #ffffff09; height: 16px; margin: 0 7px}
+.stage {background: var(--stage)}
+.stage.light {background: #e2e4e7}
+.stage.checker {background-color: #151619; background-image: linear-gradient(45deg,#202226 25%,transparent 25%),linear-gradient(-45deg,#202226 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#202226 75%),linear-gradient(-45deg,transparent 75%,#202226 75%)}
+.empty-state {padding-bottom: 42px}
+.drop-illustration {width: 72px; height: 72px; color: #4e535d; margin-bottom: 22px}
+.drop-illustration svg {stroke-width: 1.3}
+.drop-illustration rect {stroke-dasharray: none}
+.empty-state h1 {font-size: 24px; font-weight: 400; letter-spacing: .2px; line-height: 1.5; margin: 0 0 10px; color: #dfe1e6}
+.empty-state p {font-size: 12px; color: #717681}
+.type-hints {margin: 27px 0 29px; gap: 21px; font-size: 11px; color: #626772}
+.type-hints .icon {width: 14px; height: 14px; color: #656a74}
+.empty-state .primary,.update-dialog .primary {background: #e0e2e6; color: #191b20; border: 0; border-radius: 6px; font-size: 12px; font-weight: 500; padding: 10px 22px}
+.empty-state .primary:hover,.update-dialog .primary:hover {background: #f2f3f5}
+.playlist-pane {width: 128px; min-width: 112px; max-width: 16%; background: #141518; border-color: var(--border)}
+.playlist-header {height: 44px; min-height: 44px; padding: 0 6px 0 9px; gap: 4px; border-color: #ffffff08; font-size: 10px; color: #969ba5; letter-spacing: .2px}
+.playlist-header #list-count {font-size: 10px; color: #606570; font-variant-numeric: tabular-nums}
+.playlist-header button {color: #646a75}
+.file-strip {gap: 4px; padding: 10px 8px; background: transparent}
+.file-strip::-webkit-scrollbar {width: 5px}
+.file-strip::-webkit-scrollbar-thumb {background: #2c2e35; border-radius: 5px}
+.file-item {height: 70px; min-height: 70px; padding: 8px 10px; gap: 11px; border: 1px solid transparent; border-radius: 6px}
+.file-item:hover {background: #ffffff04}
+.file-item.selected {background: #ffffff08; border-color: transparent; box-shadow: inset 2px 0 #a8adb7}
+.file-item .file-thumb {width: 80px; height: 46px; background: #1d1f25; color: #5b626f; border-radius: 4px}
+.file-item .file-thumb .icon {width: 21px; height: 21px}
+.file-item .file-text {min-width: 0; gap: 5px; flex: 1}
+.file-item .file-text strong {max-width: none; width: 100%; font-size: 11px; color: #a7acb6; font-weight: 400}
+.file-item.selected .file-text strong {color: #e5e7eb}
+.file-item .file-text small {font-size: 10px; color: #646a75}
+.file-nav {color: #767c87; font-size: 11px}
+.file-strip {gap: 6px; padding: 6px}
+.file-item {height: auto; min-height: 0; aspect-ratio: 16/9; padding: 0; gap: 0; flex: none; overflow: hidden; border-radius: 6px}
+.file-item.selected {border-color: #a6adb366; background: #ffffff06; box-shadow: none}
+.file-item .file-thumb {width: 100%; height: 100%; border-radius: 0; background: #101114; aspect-ratio: 16/9}
+.file-item .file-thumb img {object-fit: contain}
+.file-item .file-thumb .icon {width: 28px; height: 28px}
+.list-spacer {flex: none; pointer-events: none}
+.stage #picture,.stage #picture:active,#animated-image,#video {cursor: default}
+.controls {display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; padding: 10px 15px; min-height: 54px; background: var(--panel); border-color: var(--border); align-items: end}
+.motion-controls {display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 0}
+.seek-row {display: flex; align-items: center; gap: 13px; min-width: 0}
+.time {min-width: 77px; margin: 0; color: #8e939e; font-size: 10px; font-family: "Cascadia Mono",Consolas,monospace; text-align: left}
+.progress-wrap {flex: 1; margin: 0; min-width: 40px; height: 24px}
+.progress-wrap canvas {top: 10px; height: 3px; border-radius: 2px; opacity: .9}
+.progress-wrap input {height: 24px}
+.progress-wrap input::-webkit-slider-runnable-track {height: 3px}
+.progress-wrap input::-webkit-slider-thumb {width: 9px; height: 9px; margin-top: -3px; background: #d3d6df; box-shadow: none}
+.transport-row {display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0}
+.playback-core,.playback-tools,.sequence-tools {display: flex; align-items: center; gap: 3px; flex-shrink: 0}
+.sequence-tools:has(#export-sequence[hidden]) {display: none}
+.playback-tools {margin-left: 3px}
+.play-button {width: 34px; height: 34px; border-radius: 50%; background: #dedfe4; color: #1b1d23}
+.play-button:hover {background: #f1f2f5; color: #08090b}
+.play-button .icon {width: 16px; height: 16px; stroke-width: 1.8}
+.motion-controls select {border: 0; border-radius: 5px; color: #9096a2; background: #ffffff04; padding: 6px 5px; font-size: 10px; max-width: 90px}
+.motion-controls select:focus {color: #d5d8df}
+.motion-controls select option {color: #d6d9e1; background: #1c1e24}
+#fps,#speed {margin-left: 5px}
+.small-button {padding: 6px 7px; font-size: 10px; color: #8a909c}
+.motion-controls #export-size {font-size: 10px; max-width: 131px; padding-left: 7px}
+#export-sequence {color: #b2b8c3; background: #ffffff06}
+.export-size-controls {gap: 5px}
+.export-size-controls label {font-size: 10px}
+#export-target-mb {width: 59px; font-size: 10px; background: #191b21; color: #d5d8df; border-color: #ffffff0e}
+.audio {display: flex; align-items: center; gap: 1px; margin-left: auto; flex-shrink: 0}
+.audio #volume {width: 55px; min-width: 40px; accent-color: #c4c8d2; margin: 0 4px; height: 16px}
+.audio #volume-level {font-size: 10px; min-width: 28px; color: #878d99}
+.view-actions {border: 0; padding: 0; gap: 1px; margin: 0; align-self: end; height: 34px}
+.view-actions #fit {padding: 7px; font-size: 10px; color: #8a909c}
+.view-actions #fit span {display: none}
+.still-controls {gap: 16px; min-width: 0; align-items: center; min-height: 34px}
+.still-controls>div {gap: 2px}
+.details {font-size: 10px; color: #747a86; letter-spacing: .1px}
+#actual-size,#wireframe {font-size: 10px; color: #9096a2}
+.document-controls {gap: 5px; color: #9198a5; font-size: 11px; min-height: 34px}
+.document-controls input {border-color: #ffffff10; background: #1b1d23; color: #d8dce4; font-size: 11px; border-radius: 5px; width: 48px}
+.range-controls {grid-column: 1/-1; padding-top: 10px; border-color: #ffffff09; font-size: 11px; color: #838a97}
+.range-controls input {background: #1b1d23; color: #d8dce4; border-color: #ffffff10; border-radius: 5px; font-size: 11px}
+.statusbar {height: 28px; min-height: 28px; padding: 0 17px; gap: 14px; background: #111214; border-color: var(--border); font-size: 10px; color: #646b77}
+.strip-toggle {font-size: 10px; color: #737b89}
+.gesture-hint {font-size: 10px; color: #535b69}
+.update-link {margin-left: auto; font-size: 10px; color: #737b89; padding: 3px 0}
+.update-link.available {color: #ced3df; background: transparent}
+.loading {bottom: 17px; background: #1b1d23f0; color: #b3b9c5; border: 1px solid #ffffff09; border-radius: 6px; font-size: 11px}
+.spinner {border-color: #484e5a; border-top-color: #d4d9e4; width: 12px; height: 12px}
+.image-navigation button {width: 34px; height: 52px; border-radius: 6px; padding: 6px; background: #15171bad; opacity: .6; color: #d8dce4}
+.image-navigation button:hover {background: #24272dde; opacity: 1}
+.image-navigation .icon {width: 22px; height: 22px; stroke-width: 1.5}
+#previous-image {left: 15px}#next-image {right: 15px}
+.stage-hud {top: 15px; left: 15px; gap: 7px}
+.frame-counter {font-size: 11px; border-radius: 5px; background: #191c23d9; color: #ccd2de; padding: 5px 8px}
+.media-information {background: #171a20ed; border-color: #ffffff0e; border-radius: 7px; color: #a7afbd; font-size: 11px; line-height: 1.9; padding: 13px 16px}
+.stage-badge {background: #29231ded; color: #bea182; border-radius: 5px; font-size: 11px}
+.drop-overlay {background: #15181ff5; border: 1px solid #727b8d; border-radius: 9px; color: #d4dae5}
+.drop-overlay strong {font-size: 22px; font-weight: 400}
+.drop-overlay span {color: #848e9f}
+.drop-overlay .icon {color: #a4aebe; width: 40px; height: 40px}
+.audio-view {gap: 14px}
+.album-art {width: 144px; height: 144px; border-radius: 16px; background: #1a1d24; border: 1px solid #ffffff07; box-shadow: none}
+.album-art>.icon {width: 56px; height: 56px; color: #747e8f}
+.audio-view h2 {font-size: 20px; font-weight: 400; color: #d5dae4}
+.audio-view>span {font-size: 11px; color: #737d8f}
+.document-view {background: #101216; padding: 20px}
+.text-view {color: #b6becc; font-size: 13px; line-height: 1.85}
+.error-state {background: var(--stage)}
+.error-state strong {font-size: 18px; font-weight: 400}
+.error-state #error-text,.error-hint {font-size: 12px; color: #7f899b}
+.update-dialog {background: #1a1d24; color: #d3d9e5; border: 1px solid #ffffff10; border-radius: 12px; padding: 30px; box-shadow: 0 16px 60px #0007}
+.update-dialog::backdrop {background: #0009; backdrop-filter: none}
+.update-dialog h2 {font-size: 20px; font-weight: 400}
+.update-dialog #update-version,.update-dialog #update-hint {color: #747f93; font-size: 11px}
+.update-dialog #update-notes {color: #929eb2; font-size: 12px; line-height: 1.9; background: transparent; border: 0; padding: 0}
+.update-dialog progress,.export-toast progress {accent-color: #b2bbc9}
+.export-toast {background: #1c2029f5; border-color: #ffffff12; border-radius: 8px; font-size: 11px; color: #b9c2d2; box-shadow: 0 8px 30px #0005}
+.fullscreen .stage {background: #08090b}
+.fullscreen .controls {background: #14171bf5; border-radius: 7px 7px 0 0; padding: 12px 20px; border-color: #ffffff08}
+@media(max-width:1100px) {
+  .playlist-pane {width: 112px; min-width: 100px; max-width: 16%}
+  .file-item .file-thumb {width: 100%; height: 100%}
+  .file-item .file-text strong {max-width: none}
+  .topbar {gap: 13px; padding: 0 14px}
+  .brand {padding-right: 13px}
+  .controls {padding: 10px 12px; gap: 6px}
+  .transport-row {gap: 5px}
+}
+@media(max-width:760px) {
+  .brand span {font-size: 12px}
+  .brand {gap: 6px; padding-right: 10px}
+  .topbar {gap: 10px; padding: 0 12px}
+  .top-actions {gap: 0}
+  .top-actions>button {font-size: 0; width: 31px; padding: 7px}
+  .divider {margin: 0 4px}
+  .playlist-pane {width: 104px; min-width: 96px; max-width: 18%}
+  .file-item {gap: 0; padding: 0; height: auto; min-height: 0}
+  .file-item .file-thumb {width: 100%; height: 100%}
+  .controls {grid-template-columns: minmax(0,1fr) auto; padding: 9px 10px}
+  .motion-controls {grid-column: 1/-1}
+  .view-actions {justify-self: end}
+  .controls:has(.motion-controls:not([hidden])) .view-actions {grid-column: 1/-1; height: 28px}
+  .audio {display: flex}
+  .audio #volume {width: 47px; min-width: 40px}
+  .empty-state h1 {font-size: 21px}
+  .type-hints {gap: 14px; max-width: 300px; line-height: 2}
+}

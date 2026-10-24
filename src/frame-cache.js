@@ -1,0 +1,20 @@
+export class FrameCache {
+  constructor(budget,onChange){this.budget=budget;this.onChange=onChange;this.entries=new Map();this.pending=new Map();this.jobs=new Map();this.high=[];this.low=[];this.bytes=0;this.id=0;this.workers=[];this.parallelPrefetch=false;}
+  createSlot(){const worker=new Worker(new URL('./image-worker.js',import.meta.url),{type:'module'}),slot={worker,busy:false};worker.onmessage=({data})=>this.finish(slot,data);worker.onerror=e=>this.finish(slot,{id:slot.id,error:e.message||'图片解码失败'});return slot;}
+  ensureWorkers(){if(!this.workers.length)this.workers=[this.createSlot(),this.createSlot()];}
+  key(frame,edge){return frame.url+'@'+frame.mtime+':'+edge;}
+  has(frame,edge){return this.entries.has(this.key(frame,edge));}
+  pin(entry){this.pinnedKey=entry.key;}
+  async get(frame,edge,urgent=true){
+    const key=this.key(frame,edge);const found=this.entries.get(key);if(found){if(urgent){for(const older of this.high){this.pending.delete(older.key);older.reject(new Error('已跳转到其他帧'));}this.high=[];this.entries.delete(key);this.entries.set(key,found);}return found;}
+    const existing=this.pending.get(key);if(existing){if(urgent){const index=this.low.indexOf(existing);if(index>=0){this.low.splice(index,1);this.high.push(existing);this.pump();}}return existing.promise;}
+    if(urgent){for(const older of this.high){this.pending.delete(older.key);older.reject(new Error('已跳转到其他帧'));}this.high=[];}
+    const job={id:++this.id,key,frame,edge};job.promise=new Promise((resolve,reject)=>{job.resolve=resolve;job.reject=reject;});this.pending.set(key,job);(urgent?this.high:this.low).push(job);this.ensureWorkers();this.pump();return job.promise;
+  }
+  pump(){this.workers.forEach((slot,index)=>{if(slot.busy)return;const job=this.high.shift()||(index===1||this.parallelPrefetch?this.low.shift():null);if(!job)return;slot.busy=true;slot.id=job.id;slot.started=performance.now();this.jobs.set(job.id,job);slot.worker.postMessage({id:job.id,url:job.frame.url,ext:job.frame.ext||job.frame.extension,edge:job.edge});});}
+  finish(slot,data){slot.busy=false;const job=this.jobs.get(data.id);this.jobs.delete(data.id);if(job){this.pending.delete(job.key);if(data.error)job.reject(new Error(data.error));else{const entry={...data,key:job.key,frameNumber:job.frame.number,decodeMs:performance.now()-slot.started};this.entries.set(job.key,entry);this.bytes+=entry.bytes;while(this.bytes>this.budget&&this.entries.size>1){const candidate=[...this.entries].find(([key])=>key!==this.pinnedKey&&key!==job.key);if(!candidate)break;const [key,value]=candidate;this.entries.delete(key);this.bytes-=value.bytes;value.bitmap.close();}job.resolve(entry);this.onChange?.();}}else data.bitmap?.close();this.pump();}
+  stopPrefetch(){for(const job of this.low){this.pending.delete(job.key);job.reject(new Error('预读已停止'));}this.low=[];}
+  beginItem(){this.pinnedKey=null;for(const job of this.pending.values())job.reject(new Error('已切换文件'));this.pending.clear();this.jobs.clear();this.high=[];this.low=[];this.workers=this.workers.map(slot=>{if(slot.busy){slot.worker.terminate();return this.createSlot();}return slot;});this.onChange?.();}
+  prefetch(frames,edge){const desired=new Set(frames.map(frame=>this.key(frame,edge)));this.low=this.low.filter(job=>{if(desired.has(job.key))return true;this.pending.delete(job.key);job.reject(new Error('已移出预读范围'));return false;});for(const frame of frames){const key=this.key(frame,edge);if(!this.entries.has(key)&&!this.pending.has(key))this.get(frame,edge,false).catch(()=>{});}this.pump();}
+  clear(){this.pinnedKey=null;for(const value of this.entries.values())value.bitmap.close();this.entries.clear();for(const job of this.pending.values())job.reject(new Error('已切换文件'));this.pending.clear();this.jobs.clear();this.high=[];this.low=[];this.bytes=0;this.workers=this.workers.map(slot=>{if(slot.busy){slot.worker.terminate();return this.createSlot();}return slot;});this.onChange?.();}
+}
